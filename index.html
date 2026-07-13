@@ -256,7 +256,7 @@
         const SUPABASE_URL = "SUPABASE_URL_PLACEHOLDER";
         const SUPABASE_ANON_KEY = "SUPABASE_ANON_KEY_PLACEHOLDER";
 
-        let supabase = null;
+        let supabaseClient = null;
         let licensesData = [];
 
         // Check if credentials are set
@@ -273,7 +273,7 @@
                 return false;
             }
             try {
-                supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 return true;
             } catch (err) {
                 Swal.fire({
@@ -316,12 +316,12 @@
             if (!initSupabase()) return;
 
             // Session check
-            supabase.auth.getSession().then(({ data: { session } }) => {
+            supabaseClient.auth.getSession().then(({ data: { session } }) => {
                 handleSession(session);
             });
 
             // Auth change listener
-            supabase.auth.onAuthStateChange((_event, session) => {
+            supabaseClient.auth.onAuthStateChange((_event, session) => {
                 handleSession(session);
             });
         });
@@ -351,11 +351,11 @@
             });
 
             try {
-                if (!supabase) {
+                if (!supabaseClient) {
                     throw new Error("Supabase mijozi ishga tushmagan! Kalitlar o'rnatilmagan bo'lishi mumkin.");
                 }
 
-                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
                 if (error) {
                     Swal.fire({
@@ -377,12 +377,12 @@
 
         // Logout Handler
         logoutBtn.addEventListener("click", async () => {
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
         });
 
         // Fetch Licenses Data
         async function fetchLicenses() {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from("licenses")
                 .select("*")
                 .order("created_at", { ascending: false });
@@ -471,7 +471,7 @@
 
         // Toggle Active State
         async function toggleActiveState(id, isChecked) {
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from("licenses")
                 .update({ is_active: isChecked, updated_at: new Date().toISOString() })
                 .eq("id", id);
@@ -563,14 +563,14 @@
 
             if (id) {
                 // Update
-                const { error: err } = await supabase
+                const { error: err } = await supabaseClient
                     .from("licenses")
                     .update({ employee_name: name, device_id: devId, expires_at: expAt, updated_at: new Date().toISOString() })
                     .eq("id", id);
                 error = err;
             } else {
                 // Insert
-                const { error: err } = await supabase
+                const { error: err } = await supabaseClient
                     .from("licenses")
                     .insert([{ employee_name: name, device_id: devId, expires_at: expAt }]);
                 error = err;
@@ -604,7 +604,7 @@
             if (result.isConfirmed) {
                 Swal.fire({ title: 'O\'chirilmoqda...', didOpen: () => Swal.showLoading() });
 
-                const { error } = await supabase.from("licenses").delete().eq("id", id);
+                const { error } = await supabaseClient.from("licenses").delete().eq("id", id);
 
                 if (error) {
                     Swal.fire({ icon: 'error', title: 'Xatolik', text: error.message });
