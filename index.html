@@ -261,17 +261,29 @@
 
         // Check if credentials are set
         function initSupabase() {
-            if (SUPABASE_URL.startsWith("YOUR_") || SUPABASE_ANON_KEY.startsWith("YOUR_")) {
+            if (SUPABASE_URL.startsWith("YOUR_") || SUPABASE_ANON_KEY.startsWith("YOUR_") ||
+                SUPABASE_URL.includes("PLACEHOLDER") || SUPABASE_ANON_KEY.includes("PLACEHOLDER") ||
+                !SUPABASE_URL || !SUPABASE_ANON_KEY) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Supabase Sozlanmagan!',
-                    text: 'Iltimos, index.html faylining 242-243 qatorlaridagi SUPABASE_URL va SUPABASE_ANON_KEY parametrlarini o\'z loyihangiz kalitlariga almashtiring.',
+                    text: 'Iltimos, GitHub repository Secrets bo\'limida SUPABASE_URL va SUPABASE_ANON_KEY qiymatlarini kiritganingizni va build muvaffaqiyatli yakunlanganini tekshiring.',
                     confirmButtonText: 'Tushundim'
                 });
                 return false;
             }
-            supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            return true;
+            try {
+                supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                return true;
+            } catch (err) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Ulanish Xatosi',
+                    text: 'Supabase-ga ulanish yaratib bo\'lmadi: ' + err.message,
+                    confirmButtonText: 'Tushundim'
+                });
+                return false;
+            }
         }
 
         // DOM Elements
@@ -338,16 +350,28 @@
                 allowOutsideClick: false
             });
 
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            try {
+                if (!supabase) {
+                    throw new Error("Supabase mijozi ishga tushmagan! Kalitlar o'rnatilmagan bo'lishi mumkin.");
+                }
 
-            if (error) {
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+                if (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Kirish taqiqlandi',
+                        text: error.message
+                    });
+                } else {
+                    Swal.close();
+                }
+            } catch (err) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Kirish taqiqlandi',
-                    text: error.message
+                    title: 'Tizim xatosi',
+                    text: err.message || err
                 });
-            } else {
-                Swal.close();
             }
         });
 
