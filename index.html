@@ -163,16 +163,20 @@
         </header>
 
         <!-- Dynamic Navigation Tabs -->
-        <div class="flex gap-2 md:gap-4 mb-6 border-b border-slate-800 pb-px">
-            <button id="tabLicensesBtn" class="py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2">
+        <div class="flex gap-2 md:gap-4 mb-6 border-b border-slate-800 pb-px overflow-x-auto">
+            <button id="tabLicensesBtn" class="py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-id-card"></i>
                 <span>Litsenziyalar</span>
             </button>
-            <button id="tabBlacklistBtn" class="py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2">
+            <button id="tabBlacklistBtn" class="py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-ban text-red-400"></i>
                 <span>Qora Ro'yxat</span>
             </button>
-            <button id="tabAlertsBtn" class="py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 relative">
+            <button id="tabActivityBtn" class="py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-chart-line text-emerald-400"></i>
+                <span>Faoliyat Monitoringi</span>
+            </button>
+            <button id="tabAlertsBtn" class="py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 relative whitespace-nowrap">
                 <i class="fa-solid fa-triangle-exclamation text-yellow-500"></i>
                 <span>Xavfsizlik Tizimi</span>
                 <span id="alertsBadge" class="absolute top-2 right-1.5 w-2 h-2 bg-red-500 rounded-full hidden animate-ping"></span>
@@ -279,7 +283,34 @@
             </div>
         </div>
 
-        <!-- ================= TAB 3: SECURITY ALERTS VIEW ================= -->
+        <!-- ================= TAB 3: ACTIVITY LOGS VIEW ================= -->
+        <div id="activityView" class="space-y-6 hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div>
+                    <h2 class="text-base md:text-lg font-bold text-emerald-400 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line"></i>
+                        Xodimlar Faoliyati Monitoringi
+                    </h2>
+                    <p class="text-slate-400 text-xs mt-0.5">Tamg'alangan loyihalar ustida ishlash va local fayl yozish jarayonlari</p>
+                </div>
+
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <select id="activityFilterUser" class="flex-1 sm:flex-initial py-1.5 px-3 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white focus:outline-none">
+                        <option value="">Barcha xodimlar</option>
+                    </select>
+                    <button id="clearAllActivitiesBtn" class="py-1.5 px-3 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/20 rounded-lg text-xs transition-all flex items-center gap-1">
+                        <i class="fa-solid fa-trash-can"></i> Tozalash
+                    </button>
+                </div>
+            </div>
+
+            <!-- Activity Logs Timeline Container -->
+            <div class="glass-card p-4 md:p-6 space-y-4 max-h-[600px] overflow-y-auto" id="activitiesContainer">
+                <!-- Dynamic Timeline Items -->
+            </div>
+        </div>
+
+        <!-- ================= TAB 4: SECURITY ALERTS VIEW ================= -->
         <div id="alertsView" class="space-y-6 hidden">
             <!-- SQL Setup Alert -->
             <div id="sqlSetupNotice" class="hidden p-4 rounded-xl border border-yellow-500/20 bg-yellow-500/5 text-slate-300 text-xs space-y-3">
@@ -287,7 +318,7 @@
                     <i class="fa-solid fa-triangle-exclamation text-yellow-500 text-lg mt-0.5"></i>
                     <div>
                         <strong class="text-yellow-500 block mb-1">Xavfsizlik tizimi jadvallari faollashtirilmagan!</strong>
-                        Qurilmalar buzib kirishi haqidagi hisobotlarni ko'rish, kutilayotgan faollashtirishlar va Qora Ro'yxatni ishlatish uchun Supabase console SQL Editor oynasida quyidagi kodni ishga tushiring:
+                        Qurilmalar buzib kirishi haqidagi hisobotlarni ko'rish, kutilayotgan faollashtirishlar, qora ro'yxat va faoliyat monitoringini ishlatish uchun Supabase console SQL Editor oynasida quyidagi kodni ishga tushiring:
                     </div>
                 </div>
                 <div class="relative bg-slate-950/80 p-3 rounded-lg border border-slate-800 font-mono text-[10px] overflow-x-auto text-emerald-400 max-h-40">
@@ -319,9 +350,21 @@ create table if not exists public.pending_activations (
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+create table if not exists public.activity_logs (
+    id uuid default gen_random_uuid() primary key,
+    device_id text not null,
+    employee_name text,
+    pc_name text,
+    pc_user text,
+    activity_type text not null,
+    details text,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 alter table public.security_alerts enable row level security;
 alter table public.blacklist enable row level security;
 alter table public.pending_activations enable row level security;
+alter table public.activity_logs enable row level security;
 
 create policy "Allow public insert to security_alerts" on public.security_alerts for insert to anon with check (true);
 create policy "Allow Admin full access to security_alerts" on public.security_alerts for all to authenticated using (true);
@@ -331,7 +374,10 @@ create policy "Allow Admin full access to blacklist" on public.blacklist for all
 
 create policy "Allow public insert to pending_activations" on public.pending_activations for insert to anon with check (true);
 create policy "Allow public read of pending_activations" on public.pending_activations for select using (true);
-create policy "Allow Admin full access to pending_activations" on public.pending_activations for all to authenticated using (true);</pre>
+create policy "Allow Admin full access to pending_activations" on public.pending_activations for all to authenticated using (true);
+
+create policy "Allow public insert to activity_logs" on public.activity_logs for insert to anon with check (true);
+create policy "Allow Admin full access to activity_logs" on public.activity_logs for all to authenticated using (true);</pre>
                     <button onclick="copySqlCode()" class="absolute top-2 right-2 px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 transition-all font-sans text-[10px] flex items-center gap-1">
                         <i class="fa-solid fa-copy"></i> Nusxa olish
                     </button>
@@ -414,6 +460,7 @@ create policy "Allow Admin full access to pending_activations" on public.pending
         let blacklistData = [];
         let alertsData = [];
         let pendingActivationsData = [];
+        let activityLogsData = [];
         let notifiedAlertIds = new Set(); // To prevent repeating alerts that were already shown in popups
         let activeTab = "licenses";
         let refreshIntervalId = null;
@@ -475,18 +522,23 @@ create policy "Allow Admin full access to pending_activations" on public.pending
         // Tabs DOM
         const tabLicensesBtn = document.getElementById("tabLicensesBtn");
         const tabBlacklistBtn = document.getElementById("tabBlacklistBtn");
+        const tabActivityBtn = document.getElementById("tabActivityBtn");
         const tabAlertsBtn = document.getElementById("tabAlertsBtn");
         
         const licensesView = document.getElementById("licensesView");
         const blacklistView = document.getElementById("blacklistView");
+        const activityView = document.getElementById("activityView");
         const alertsView = document.getElementById("alertsView");
         
         const alertsBadge = document.getElementById("alertsBadge");
         const alertsCountBadge = document.getElementById("alertsCountBadge");
         const alertsContainer = document.getElementById("alertsContainer");
         const blacklistContainer = document.getElementById("blacklistContainer");
+        const activitiesContainer = document.getElementById("activitiesContainer");
         const addBlacklistBtn = document.getElementById("addBlacklistBtn");
         const clearAllAlertsBtn = document.getElementById("clearAllAlertsBtn");
+        const clearAllActivitiesBtn = document.getElementById("clearAllActivitiesBtn");
+        const activityFilterUser = document.getElementById("activityFilterUser");
         const sqlSetupNotice = document.getElementById("sqlSetupNotice");
 
         // Initialization
@@ -506,10 +558,16 @@ create policy "Allow Admin full access to pending_activations" on public.pending
             // Set up Tabs switching
             tabLicensesBtn.addEventListener("click", () => switchTab("licenses"));
             tabBlacklistBtn.addEventListener("click", () => switchTab("blacklist"));
+            tabActivityBtn.addEventListener("click", () => switchTab("activity"));
             tabAlertsBtn.addEventListener("click", () => switchTab("alerts"));
             
             clearAllAlertsBtn.addEventListener("click", clearAllAlerts);
+            clearAllActivitiesBtn.addEventListener("click", clearAllActivities);
             addBlacklistBtn.addEventListener("click", promptAddBlacklist);
+            
+            activityFilterUser.addEventListener("change", () => {
+                renderActivityLogs(activityLogsData);
+            });
         });
 
         function handleSession(session) {
@@ -520,6 +578,7 @@ create policy "Allow Admin full access to pending_activations" on public.pending
                 fetchBlacklist();
                 fetchAlerts();
                 fetchPendingActivations();
+                fetchActivityLogs();
 
                 // Real-time automatic check every 10 seconds
                 if (!refreshIntervalId) {
@@ -528,6 +587,7 @@ create policy "Allow Admin full access to pending_activations" on public.pending
                         fetchBlacklist(true);
                         fetchAlerts(true);
                         fetchPendingActivations(true);
+                        fetchActivityLogs(true);
                     }, 10000);
                 }
             } else {
@@ -538,6 +598,7 @@ create policy "Allow Admin full access to pending_activations" on public.pending
                 alertsContainer.innerHTML = "";
                 blacklistContainer.innerHTML = "";
                 pendingActivationsContainer.innerHTML = "";
+                activitiesContainer.innerHTML = "";
                 if (refreshIntervalId) {
                     clearInterval(refreshIntervalId);
                     refreshIntervalId = null;
@@ -549,24 +610,30 @@ create policy "Allow Admin full access to pending_activations" on public.pending
         function switchTab(tab) {
             activeTab = tab;
             // Clear current tabs classes
-            tabLicensesBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2";
-            tabBlacklistBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2";
-            tabAlertsBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 relative";
+            tabLicensesBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
+            tabBlacklistBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
+            tabActivityBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
+            tabAlertsBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 relative whitespace-nowrap";
             
             licensesView.classList.add("hidden");
             blacklistView.classList.add("hidden");
+            activityView.classList.add("hidden");
             alertsView.classList.add("hidden");
 
             if (tab === "licenses") {
-                tabLicensesBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2";
+                tabLicensesBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
                 licensesView.classList.remove("hidden");
                 fetchPendingActivations();
             } else if (tab === "blacklist") {
-                tabBlacklistBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2";
+                tabBlacklistBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
                 blacklistView.classList.remove("hidden");
                 fetchBlacklist();
+            } else if (tab === "activity") {
+                tabActivityBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
+                activityView.classList.remove("hidden");
+                fetchActivityLogs();
             } else {
-                tabAlertsBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 relative";
+                tabAlertsBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 relative whitespace-nowrap";
                 alertsView.classList.remove("hidden");
                 fetchAlerts();
             }
@@ -616,6 +683,22 @@ create policy "Allow Admin full access to pending_activations" on public.pending
             licensesData = data || [];
             renderLicenses(licensesData);
             updateStats(licensesData);
+            updateUserFilters(licensesData);
+        }
+
+        // Populate User Filter Select Options
+        function updateUserFilters(licenses) {
+            const currentFilterVal = activityFilterUser.value;
+            activityFilterUser.innerHTML = '<option value="">Barcha xodimlar</option>';
+            
+            const users = [...new Set(licenses.map(l => l.employee_name))].sort();
+            users.forEach(user => {
+                const option = document.createElement("option");
+                option.value = user;
+                option.innerText = user;
+                if (user === currentFilterVal) option.selected = true;
+                activityFilterUser.appendChild(option);
+            });
         }
 
         // Fetch Pending Activations Data
@@ -760,15 +843,120 @@ create policy "Allow Admin full access to pending_activations" on public.pending
             }
         };
 
-        // Update Statistics Panel
-        function updateStats(data) {
-            const total = data.length;
-            const active = data.filter(item => item.is_active && new Date(item.expires_at) > new Date()).length;
-            const expired = data.filter(item => new Date(item.expires_at) <= new Date()).length;
+        // Fetch Activity Logs
+        async function fetchActivityLogs(silent = false) {
+            if (!supabaseClient) return;
 
-            statTotal.innerText = total;
-            statActive.innerText = active;
-            statExpired.innerText = expired;
+            const { data, error } = await supabaseClient
+                .from("activity_logs")
+                .select("*")
+                .order("created_at", { ascending: false })
+                .limit(100);
+
+            if (error) {
+                console.error("Activity logs error:", error);
+                return;
+            }
+
+            activityLogsData = data || [];
+            renderActivityLogs(activityLogsData);
+        }
+
+        // Render Activity Logs Timeline
+        function renderActivityLogs(data) {
+            activitiesContainer.innerHTML = "";
+
+            const selectedUser = activityFilterUser.value;
+            const filtered = selectedUser ? data.filter(log => log.employee_name === selectedUser) : data;
+
+            if (filtered.length === 0) {
+                activitiesContainer.innerHTML = `
+                    <div class="text-center p-8 text-slate-500">
+                        <i class="fa-solid fa-clock text-3xl mb-2 block"></i>
+                        Faoliyat tarixi bo'sh.
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(log => {
+                const timeString = new Date(log.created_at).toLocaleString("uz-UZ", {
+                    month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'
+                });
+
+                let iconClass = "fa-solid fa-circle-notch text-slate-400";
+                let badgeColor = "bg-slate-500/10 text-slate-400 border-slate-500/20";
+                let label = log.activity_type;
+
+                if (log.activity_type === "VAULT_FILE_READ") {
+                    iconClass = "fa-solid fa-file-export text-blue-400";
+                    badgeColor = "bg-blue-500/10 text-blue-400 border-blue-500/20";
+                    label = "Vaultdan o'qildi";
+                } else if (log.activity_type === "VAULT_FILE_WRITE") {
+                    iconClass = "fa-solid fa-file-import text-emerald-400";
+                    badgeColor = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                    label = "Vaultga yozildi";
+                } else if (log.activity_type === "LOCAL_FILE_WRITE") {
+                    iconClass = "fa-solid fa-pen-nib text-orange-400";
+                    badgeColor = "bg-orange-500/10 text-orange-400 border-orange-500/20";
+                    label = "Mahalliy chizma";
+                }
+
+                const item = document.createElement("div");
+                item.className = "flex gap-4 items-start border-l border-slate-800 pl-4 relative ml-3 py-1";
+                item.innerHTML = `
+                    <div class="absolute -left-[9px] top-2 bg-slate-950 p-0.5 rounded-full border border-slate-800">
+                        <div class="w-4 h-4 rounded-full flex items-center justify-center text-[8px] bg-slate-900">
+                            <i class="${iconClass}"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 space-y-1">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-semibold text-white">${escapeHtml(log.employee_name || 'Noma\'lum')}</span>
+                                <span class="text-[9px] px-1.5 py-px border rounded-full ${badgeColor}">${label}</span>
+                            </div>
+                            <span class="text-[10px] text-slate-500 font-mono">${timeString}</span>
+                        </div>
+                        
+                        <p class="text-xs text-slate-300 font-medium">${escapeHtml(log.details || '')}</p>
+                        <div class="text-[9px] text-slate-500 font-mono flex items-center gap-2">
+                            <span>Kompyuter: <strong>${escapeHtml(log.pc_name || 'Noma\'lum')}</strong> (${escapeHtml(log.pc_user || 'Noma\'lum')})</span>
+                            <span>•</span>
+                            <span>Device ID: ${truncateString(log.device_id, 12)}</span>
+                        </div>
+                    </div>
+                `;
+                activitiesContainer.appendChild(item);
+            });
+        }
+
+        // Clear Activity Logs
+        async function clearAllActivities() {
+            if (activityLogsData.length === 0) return;
+
+            const result = await Swal.fire({
+                title: 'Faoliyat monitoringi tozalansinmi?',
+                text: 'Barcha xodimlarning ish faoliyati tarixi butunlay o\'chiriladi!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Ha, tozalash',
+                cancelButtonText: 'Bekor qilish'
+            });
+
+            if (result.isConfirmed) {
+                Swal.fire({ title: 'Tozalanmoqda...', didOpen: () => Swal.showLoading() });
+                const { error } = await supabaseClient.from("activity_logs").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+
+                if (error) {
+                    Swal.fire({ icon: 'error', title: 'Xatolik', text: error.message });
+                } else {
+                    Swal.fire({ icon: 'success', title: 'Tarix tozalandi!', timer: 1500, showConfirmButton: false });
+                    fetchActivityLogs();
+                }
+            }
         }
 
         // Render Licenses (Responsive Grid & Table)
@@ -1085,7 +1273,7 @@ create policy "Allow Admin full access to pending_activations" on public.pending
                     if (!notifiedAlertIds.has(alert.id)) {
                         notifiedAlertIds.add(alert.id);
                         
-                        // Critical threat popup trigger (debugger, clock, services.msc stop attempt)
+                        // Critical threat popup trigger (debugger, clock, services.msc stop attempt, security bypass)
                         showCriticalAlertPopup(alert);
                     }
                 });
@@ -1097,7 +1285,6 @@ create policy "Allow Admin full access to pending_activations" on public.pending
 
         // Live Real-Time Critical Alert Popup Modal
         function showCriticalAlertPopup(alert) {
-            let detailsUz = alert.details;
             let iconText = "🚨 Xavfli Amal Aniqlandi!";
             
             if (alert.alert_type === "SERVICE_STOP_ATTEMPT") {
@@ -1106,6 +1293,8 @@ create policy "Allow Admin full access to pending_activations" on public.pending
                 iconText = "🪲 Buzish/Hacking Urinishi!";
             } else if (alert.alert_type === "CLOCK_TAMPER") {
                 iconText = "⏳ Soat O'zgartirildi!";
+            } else if (alert.alert_type === "SECURITY_BYPASS_ATTEMPT") {
+                iconText = "⚡ Tizimni Chetlab O'tish Urinishi!";
             }
 
             Swal.fire({
@@ -1184,6 +1373,11 @@ create policy "Allow Admin full access to pending_activations" on public.pending
                     typeLabel = "Xizmat O'chirilishi";
                     cardBorderClass = "border-red-500/30";
                     badgeClass = "bg-red-500/10 text-red-400 border-red-500/20";
+                } else if (alert.alert_type === "SECURITY_BYPASS_ATTEMPT") {
+                    iconClass = "fa-solid fa-bolt text-red-500 animate-bounce";
+                    typeLabel = "Bypass himoyasi";
+                    cardBorderClass = "border-red-500/40 shadow-lg shadow-red-500/10";
+                    badgeClass = "bg-red-500/20 text-red-400 border-red-500/30";
                 }
 
                 const card = document.createElement("div");
