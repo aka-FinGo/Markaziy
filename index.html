@@ -209,6 +209,11 @@
                 </div>
             </div>
 
+            <!-- Pending Activations Container -->
+            <div id="pendingActivationsContainer" class="hidden space-y-3 bg-yellow-500/5 p-4 rounded-2xl border border-yellow-500/10">
+                <!-- Dynamic Pending Cards -->
+            </div>
+
             <!-- Action Bar -->
             <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
                 <div class="relative flex-1 max-w-md">
@@ -282,12 +287,12 @@
                     <i class="fa-solid fa-triangle-exclamation text-yellow-500 text-lg mt-0.5"></i>
                     <div>
                         <strong class="text-yellow-500 block mb-1">Xavfsizlik tizimi jadvallari faollashtirilmagan!</strong>
-                        Qurilmalar buzib kirishi haqidagi hisobotlarni ko'rish va Qora Ro'yxatni ishlatish uchun Supabase console SQL Editor oynasida quyidagi kodni ishga tushiring:
+                        Qurilmalar buzib kirishi haqidagi hisobotlarni ko'rish, kutilayotgan faollashtirishlar va Qora Ro'yxatni ishlatish uchun Supabase console SQL Editor oynasida quyidagi kodni ishga tushiring:
                     </div>
                 </div>
                 <div class="relative bg-slate-950/80 p-3 rounded-lg border border-slate-800 font-mono text-[10px] overflow-x-auto text-emerald-400 max-h-40">
-                    <pre id="sqlSetupText">-- security_alerts va blacklist jadvalini yaratish
-create table public.security_alerts (
+                    <pre id="sqlSetupText">-- Jadvallarni yaratish va sozlash
+create table if not exists public.security_alerts (
     id uuid default gen_random_uuid() primary key,
     device_id text not null,
     employee_name text,
@@ -299,21 +304,34 @@ create table public.security_alerts (
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
-create table public.blacklist (
+create table if not exists public.blacklist (
     id uuid default gen_random_uuid() primary key,
     device_id text not null unique,
     reason text,
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+create table if not exists public.pending_activations (
+    id uuid default gen_random_uuid() primary key,
+    device_id text not null unique,
+    employee_name text not null,
+    expires_at timestamp with time zone not null,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 alter table public.security_alerts enable row level security;
 alter table public.blacklist enable row level security;
+alter table public.pending_activations enable row level security;
 
 create policy "Allow public insert to security_alerts" on public.security_alerts for insert to anon with check (true);
 create policy "Allow Admin full access to security_alerts" on public.security_alerts for all to authenticated using (true);
 
 create policy "Allow public read of blacklist" on public.blacklist for select using (true);
-create policy "Allow Admin full access to blacklist" on public.blacklist for all to authenticated using (true);</pre>
+create policy "Allow Admin full access to blacklist" on public.blacklist for all to authenticated using (true);
+
+create policy "Allow public insert to pending_activations" on public.pending_activations for insert to anon with check (true);
+create policy "Allow public read of pending_activations" on public.pending_activations for select using (true);
+create policy "Allow Admin full access to pending_activations" on public.pending_activations for all to authenticated using (true);</pre>
                     <button onclick="copySqlCode()" class="absolute top-2 right-2 px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 transition-all font-sans text-[10px] flex items-center gap-1">
                         <i class="fa-solid fa-copy"></i> Nusxa olish
                     </button>
@@ -395,6 +413,7 @@ create policy "Allow Admin full access to blacklist" on public.blacklist for all
         let licensesData = [];
         let blacklistData = [];
         let alertsData = [];
+        let pendingActivationsData = [];
         let notifiedAlertIds = new Set(); // To prevent repeating alerts that were already shown in popups
         let activeTab = "licenses";
         let refreshIntervalId = null;
@@ -441,6 +460,7 @@ create policy "Allow Admin full access to blacklist" on public.blacklist for all
         const addLicenseBtn = document.getElementById("addLicenseBtn");
         const tableBody = document.getElementById("tableBody");
         const mobileLicensesContainer = document.getElementById("mobileLicensesContainer");
+        const pendingActivationsContainer = document.getElementById("pendingActivationsContainer");
         
         const licenseModal = document.getElementById("licenseModal");
         const licenseForm = document.getElementById("licenseForm");
@@ -499,6 +519,7 @@ create policy "Allow Admin full access to blacklist" on public.blacklist for all
                 fetchLicenses();
                 fetchBlacklist();
                 fetchAlerts();
+                fetchPendingActivations();
 
                 // Real-time automatic check every 10 seconds
                 if (!refreshIntervalId) {
@@ -506,6 +527,7 @@ create policy "Allow Admin full access to blacklist" on public.blacklist for all
                         fetchLicenses();
                         fetchBlacklist(true);
                         fetchAlerts(true);
+                        fetchPendingActivations(true);
                     }, 10000);
                 }
             } else {
@@ -515,6 +537,7 @@ create policy "Allow Admin full access to blacklist" on public.blacklist for all
                 mobileLicensesContainer.innerHTML = "";
                 alertsContainer.innerHTML = "";
                 blacklistContainer.innerHTML = "";
+                pendingActivationsContainer.innerHTML = "";
                 if (refreshIntervalId) {
                     clearInterval(refreshIntervalId);
                     refreshIntervalId = null;
@@ -537,6 +560,7 @@ create policy "Allow Admin full access to blacklist" on public.blacklist for all
             if (tab === "licenses") {
                 tabLicensesBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2";
                 licensesView.classList.remove("hidden");
+                fetchPendingActivations();
             } else if (tab === "blacklist") {
                 tabBlacklistBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2";
                 blacklistView.classList.remove("hidden");
@@ -593,6 +617,148 @@ create policy "Allow Admin full access to blacklist" on public.blacklist for all
             renderLicenses(licensesData);
             updateStats(licensesData);
         }
+
+        // Fetch Pending Activations Data
+        async function fetchPendingActivations(silent = false) {
+            if (!supabaseClient) return;
+
+            const { data, error } = await supabaseClient
+                .from("pending_activations")
+                .select("*")
+                .order("created_at", { ascending: false });
+
+            if (error) {
+                console.error("Pending activations error:", error);
+                return;
+            }
+
+            pendingActivationsData = data || [];
+            renderPendingActivations(pendingActivationsData);
+        }
+
+        // Render Pending Activations Banner Cards
+        function renderPendingActivations(data) {
+            pendingActivationsContainer.innerHTML = "";
+
+            if (data.length === 0) {
+                pendingActivationsContainer.classList.add("hidden");
+                return;
+            }
+
+            pendingActivationsContainer.classList.remove("hidden");
+
+            // Add Header
+            const header = document.createElement("div");
+            header.className = "flex items-center gap-2 text-yellow-500 font-bold text-xs md:text-sm mb-3 animate-pulse";
+            header.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i> <span>Kutilayotgan Faollashtirishlar (${data.length} ta)</span>`;
+            pendingActivationsContainer.appendChild(header);
+
+            data.forEach(item => {
+                const dateString = new Date(item.expires_at).toLocaleString("uz-UZ", {
+                    year: 'numeric', month: '2-digit', day: '2-digit',
+                    hour: '2-digit', minute: '2-digit'
+                });
+
+                const card = document.createElement("div");
+                card.className = "glass-card p-4 border border-yellow-500/30 bg-yellow-500/5 flex flex-col md:flex-row md:items-center justify-between gap-3 animate-fade-in mb-2";
+                card.innerHTML = `
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-bold text-white text-xs md:text-sm">${escapeHtml(item.employee_name)}</h4>
+                            <span class="text-[9px] bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2 py-0.5 rounded-full font-semibold">Tasdiqlash kutilmoqda</span>
+                        </div>
+                        <p class="text-[10px] md:text-xs text-slate-400 font-mono flex items-center gap-1 cursor-pointer hover:text-blue-400" onclick="copyToClipboard('${item.device_id}')">
+                            <strong>Device ID:</strong> ${truncateString(item.device_id, 24)} <i class="fa-solid fa-copy text-[8px]"></i>
+                        </p>
+                        <p class="text-[10px] md:text-xs text-slate-400">
+                            <strong>Taklif etilgan muddat:</strong> <span class="text-slate-300 font-medium">${dateString}</span>
+                        </p>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <button onclick="approveActivation('${item.id}', '${item.device_id}', '${escapeHtml(item.employee_name)}', '${item.expires_at}')" class="py-1.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all">
+                            <i class="fa-solid fa-check"></i> Ruxsat berish
+                        </button>
+                        <button onclick="rejectActivation('${item.id}')" class="py-1.5 px-3 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/20 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all">
+                            <i class="fa-solid fa-xmark"></i> Rad etish
+                        </button>
+                    </div>
+                `;
+                pendingActivationsContainer.appendChild(card);
+            });
+        }
+
+        // Approve Activation Action
+        window.approveActivation = async function(id, deviceId, employeeName, expiresAt) {
+            Swal.fire({ title: 'Tasdiqlanmoqda...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+
+            // 1. Delete from blacklist if exists
+            await supabaseClient.from("blacklist").delete().eq("device_id", deviceId);
+
+            // 2. Check if device exists in licenses
+            const { data: existingLicense } = await supabaseClient
+                .from("licenses")
+                .select("id")
+                .eq("device_id", deviceId);
+
+            let error = null;
+            if (existingLicense && existingLicense.length > 0) {
+                // Update
+                const { error: err } = await supabaseClient
+                    .from("licenses")
+                    .update({ employee_name: employeeName, expires_at: expiresAt, is_active: true, updated_at: new Date().toISOString() })
+                    .eq("device_id", deviceId);
+                error = err;
+            } else {
+                // Insert
+                const { error: err } = await supabaseClient
+                    .from("licenses")
+                    .insert([{ employee_name: employeeName, device_id: deviceId, expires_at: expiresAt, is_active: true }]);
+                error = err;
+            }
+
+            if (error) {
+                Swal.fire({ icon: 'error', title: 'Xatolik', text: error.message });
+                return;
+            }
+
+            // 3. Delete request from pending_activations
+            await supabaseClient.from("pending_activations").delete().eq("id", id);
+
+            // 4. Dismiss security alert for unauthorized device
+            await supabaseClient.from("security_alerts").delete().eq("device_id", deviceId);
+
+            Swal.fire({ icon: 'success', title: 'Litsenziya faollashtirildi!', timer: 1500, showConfirmButton: false });
+            fetchLicenses();
+            fetchPendingActivations();
+            fetchAlerts();
+        };
+
+        // Reject Activation Action
+        window.rejectActivation = async function(id) {
+            const result = await Swal.fire({
+                title: 'Rad etilsinmi?',
+                text: 'Faollashtirish so\'rovi paneldan o\'chirib tashlanadi.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Ha, rad etish',
+                cancelButtonText: 'Bekor qilish'
+            });
+
+            if (result.isConfirmed) {
+                const { error } = await supabaseClient
+                    .from("pending_activations")
+                    .delete().eq("id", id);
+
+                if (error) {
+                    Swal.fire({ icon: 'error', title: 'Xatolik', text: error.message });
+                } else {
+                    Swal.fire({ icon: 'success', title: 'Rad etildi!', timer: 1500, showConfirmButton: false });
+                    fetchPendingActivations();
+                }
+            }
+        };
 
         // Update Statistics Panel
         function updateStats(data) {
