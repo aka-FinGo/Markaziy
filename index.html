@@ -831,9 +831,6 @@ create policy "Allow Admin full access to blacklist" on public.blacklist for all
             });
 
             if (formValues) {
-                // If it is in licenses, delete it from licenses first
-                const { error: delErr } = await supabaseClient.from("licenses").delete().eq("device_id", formValues.deviceId);
-                
                 const { error } = await supabaseClient
                     .from("blacklist")
                     .insert([{ device_id: formValues.deviceId, reason: formValues.reason }]);
@@ -852,10 +849,6 @@ create policy "Allow Admin full access to blacklist" on public.blacklist for all
         window.blacklistDeviceDirectly = async function(deviceId, employeeName, reason) {
             Swal.fire({ title: 'Bloklanmoqda...', didOpen: () => Swal.showLoading() });
             
-            // Delete license
-            await supabaseClient.from("licenses").delete().eq("device_id", deviceId);
-            
-            // Add to blacklist
             const { error } = await supabaseClient
                 .from("blacklist")
                 .insert([{ device_id: deviceId, reason: `Xodim: ${employeeName}. Sabab: ${reason}` }]);
