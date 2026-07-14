@@ -164,11 +164,15 @@
 
         <!-- Dynamic Navigation Tabs -->
         <div class="flex gap-2 md:gap-4 mb-6 border-b border-slate-800 pb-px">
-            <button id="tabLicensesBtn" class="py-2.5 px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2">
+            <button id="tabLicensesBtn" class="py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2">
                 <i class="fa-solid fa-id-card"></i>
                 <span>Litsenziyalar</span>
             </button>
-            <button id="tabAlertsBtn" class="py-2.5 px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 relative">
+            <button id="tabBlacklistBtn" class="py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2">
+                <i class="fa-solid fa-ban text-red-400"></i>
+                <span>Qora Ro'yxat</span>
+            </button>
+            <button id="tabAlertsBtn" class="py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 relative">
                 <i class="fa-solid fa-triangle-exclamation text-yellow-500"></i>
                 <span>Xavfsizlik Tizimi</span>
                 <span id="alertsBadge" class="absolute top-2 right-1.5 w-2 h-2 bg-red-500 rounded-full hidden animate-ping"></span>
@@ -247,36 +251,69 @@
             </div>
         </div>
 
-        <!-- ================= TAB 2: SECURITY ALERTS VIEW ================= -->
+        <!-- ================= TAB 2: BLACKLIST VIEW ================= -->
+        <div id="blacklistView" class="space-y-6 hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div>
+                    <h2 class="text-base md:text-lg font-bold text-red-400 flex items-center gap-2">
+                        <i class="fa-solid fa-ban"></i>
+                        Bloklangan Qurilmalar (Qora Ro'yxat)
+                    </h2>
+                    <p class="text-slate-400 text-xs mt-0.5">Ushbu ro'yxatdagi qurilmalar litsenziyasi bo'lsa ham butunlay bloklanadi.</p>
+                </div>
+                
+                <button id="addBlacklistBtn" class="w-full sm:w-auto py-2 px-4 bg-red-600/20 hover:bg-red-600/30 text-red-300 border border-red-500/20 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span>Qora ro'yxatga kiritish</span>
+                </button>
+            </div>
+
+            <!-- Blacklist Unified View -->
+            <div id="blacklistContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Dynamic Blacklist Cards -->
+            </div>
+        </div>
+
+        <!-- ================= TAB 3: SECURITY ALERTS VIEW ================= -->
         <div id="alertsView" class="space-y-6 hidden">
-            <!-- SQL Setup Alert (Only displayed if table does not exist) -->
+            <!-- SQL Setup Alert -->
             <div id="sqlSetupNotice" class="hidden p-4 rounded-xl border border-yellow-500/20 bg-yellow-500/5 text-slate-300 text-xs space-y-3">
                 <div class="flex items-start gap-2.5">
                     <i class="fa-solid fa-triangle-exclamation text-yellow-500 text-lg mt-0.5"></i>
                     <div>
-                        <strong class="text-yellow-500 block mb-1">Xavfsizlik jadvali faollashtirilmagan!</strong>
-                        Qurilmalar buzib kirishi haqidagi hisobotlarni ko'rish uchun, Supabase console SQL Editor oynasida quyidagi kodni ishga tushiring:
+                        <strong class="text-yellow-500 block mb-1">Xavfsizlik tizimi jadvallari faollashtirilmagan!</strong>
+                        Qurilmalar buzib kirishi haqidagi hisobotlarni ko'rish va Qora Ro'yxatni ishlatish uchun Supabase console SQL Editor oynasida quyidagi kodni ishga tushiring:
                     </div>
                 </div>
                 <div class="relative bg-slate-950/80 p-3 rounded-lg border border-slate-800 font-mono text-[10px] overflow-x-auto text-emerald-400 max-h-40">
-                    <pre id="sqlSetupText">-- security_alerts jadvalini yaratish
+                    <pre id="sqlSetupText">-- security_alerts va blacklist jadvalini yaratish
 create table public.security_alerts (
     id uuid default gen_random_uuid() primary key,
     device_id text not null,
     employee_name text,
+    pc_name text,
+    pc_user text,
     alert_type text not null,
     details text,
     severity text default 'HIGH' not null,
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+create table public.blacklist (
+    id uuid default gen_random_uuid() primary key,
+    device_id text not null unique,
+    reason text,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 alter table public.security_alerts enable row level security;
+alter table public.blacklist enable row level security;
 
-create policy "Allow public insert to security_alerts" on public.security_alerts
-    for insert to anon with check (true);
+create policy "Allow public insert to security_alerts" on public.security_alerts for insert to anon with check (true);
+create policy "Allow Admin full access to security_alerts" on public.security_alerts for all to authenticated using (true);
 
-create policy "Allow Admin full access to security_alerts" on public.security_alerts
-    for all to authenticated using (true);</pre>
+create policy "Allow public read of blacklist" on public.blacklist for select using (true);
+create policy "Allow Admin full access to blacklist" on public.blacklist for all to authenticated using (true);</pre>
                     <button onclick="copySqlCode()" class="absolute top-2 right-2 px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 transition-all font-sans text-[10px] flex items-center gap-1">
                         <i class="fa-solid fa-copy"></i> Nusxa olish
                     </button>
@@ -290,7 +327,7 @@ create policy "Allow Admin full access to security_alerts" on public.security_al
                         <i class="fa-solid fa-bell text-red-500 animate-bounce"></i>
                         Xavfsizlik Ogohlantirishlari
                     </h2>
-                    <p class="text-slate-400 text-xs mt-0.5">Hacking, litsenziyani aylanib o'tish yoki soatni orqaga surish urinishlari</p>
+                    <p class="text-slate-400 text-xs mt-0.5">Buzib kirish, debugger, services.msc yopish yoki soatni orqaga surish urinishlari</p>
                 </div>
 
                 <button id="clearAllAlertsBtn" class="w-full sm:w-auto py-1.5 px-3 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/20 rounded-lg text-xs md:text-sm transition-all duration-200 flex items-center justify-center gap-1.5">
@@ -299,7 +336,7 @@ create policy "Allow Admin full access to security_alerts" on public.security_al
                 </button>
             </div>
 
-            <!-- Alerts Container (Mobile & Desktop Unified Card Layout) -->
+            <!-- Alerts Container -->
             <div id="alertsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Dynamic Alert Cards -->
             </div>
@@ -356,8 +393,10 @@ create policy "Allow Admin full access to security_alerts" on public.security_al
 
         let supabaseClient = null;
         let licensesData = [];
+        let blacklistData = [];
         let alertsData = [];
-        let activeTab = "licenses"; // "licenses" or "alerts"
+        let notifiedAlertIds = new Set(); // To prevent repeating alerts that were already shown in popups
+        let activeTab = "licenses";
         let refreshIntervalId = null;
 
         // Check if credentials are set
@@ -415,12 +454,18 @@ create policy "Allow Admin full access to security_alerts" on public.security_al
 
         // Tabs DOM
         const tabLicensesBtn = document.getElementById("tabLicensesBtn");
+        const tabBlacklistBtn = document.getElementById("tabBlacklistBtn");
         const tabAlertsBtn = document.getElementById("tabAlertsBtn");
+        
         const licensesView = document.getElementById("licensesView");
+        const blacklistView = document.getElementById("blacklistView");
         const alertsView = document.getElementById("alertsView");
+        
         const alertsBadge = document.getElementById("alertsBadge");
         const alertsCountBadge = document.getElementById("alertsCountBadge");
         const alertsContainer = document.getElementById("alertsContainer");
+        const blacklistContainer = document.getElementById("blacklistContainer");
+        const addBlacklistBtn = document.getElementById("addBlacklistBtn");
         const clearAllAlertsBtn = document.getElementById("clearAllAlertsBtn");
         const sqlSetupNotice = document.getElementById("sqlSetupNotice");
 
@@ -440,8 +485,11 @@ create policy "Allow Admin full access to security_alerts" on public.security_al
 
             // Set up Tabs switching
             tabLicensesBtn.addEventListener("click", () => switchTab("licenses"));
+            tabBlacklistBtn.addEventListener("click", () => switchTab("blacklist"));
             tabAlertsBtn.addEventListener("click", () => switchTab("alerts"));
+            
             clearAllAlertsBtn.addEventListener("click", clearAllAlerts);
+            addBlacklistBtn.addEventListener("click", promptAddBlacklist);
         });
 
         function handleSession(session) {
@@ -449,12 +497,14 @@ create policy "Allow Admin full access to security_alerts" on public.security_al
                 loginScreen.classList.add("hidden");
                 dashboardScreen.classList.remove("hidden");
                 fetchLicenses();
+                fetchBlacklist();
                 fetchAlerts();
 
                 // Real-time automatic check every 10 seconds
                 if (!refreshIntervalId) {
                     refreshIntervalId = setInterval(() => {
                         fetchLicenses();
+                        fetchBlacklist(true);
                         fetchAlerts(true);
                     }, 10000);
                 }
@@ -464,6 +514,7 @@ create policy "Allow Admin full access to security_alerts" on public.security_al
                 tableBody.innerHTML = "";
                 mobileLicensesContainer.innerHTML = "";
                 alertsContainer.innerHTML = "";
+                blacklistContainer.innerHTML = "";
                 if (refreshIntervalId) {
                     clearInterval(refreshIntervalId);
                     refreshIntervalId = null;
@@ -474,16 +525,25 @@ create policy "Allow Admin full access to security_alerts" on public.security_al
         // Tab Switch
         function switchTab(tab) {
             activeTab = tab;
+            // Clear current tabs classes
+            tabLicensesBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2";
+            tabBlacklistBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2";
+            tabAlertsBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 relative";
+            
+            licensesView.classList.add("hidden");
+            blacklistView.classList.add("hidden");
+            alertsView.classList.add("hidden");
+
             if (tab === "licenses") {
-                tabLicensesBtn.className = "py-2.5 px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2";
-                tabAlertsBtn.className = "py-2.5 px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 relative";
+                tabLicensesBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2";
                 licensesView.classList.remove("hidden");
-                alertsView.classList.add("hidden");
+            } else if (tab === "blacklist") {
+                tabBlacklistBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2";
+                blacklistView.classList.remove("hidden");
+                fetchBlacklist();
             } else {
-                tabAlertsBtn.className = "py-2.5 px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 relative";
-                tabLicensesBtn.className = "py-2.5 px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2";
+                tabAlertsBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 relative";
                 alertsView.classList.remove("hidden");
-                licensesView.classList.add("hidden");
                 fetchAlerts();
             }
         }
@@ -662,7 +722,7 @@ create policy "Allow Admin full access to security_alerts" on public.security_al
 
             if (error) {
                 Swal.fire({ icon: 'error', title: 'Xatolik', text: error.message });
-                fetchLicenses(); // Rollback UI state
+                fetchLicenses();
             } else {
                 const Toast = Swal.mixin({
                     toast: true,
@@ -680,7 +740,161 @@ create policy "Allow Admin full access to security_alerts" on public.security_al
             }
         }
 
-        // Fetch Security Alerts
+        // Fetch Blacklist Data
+        async function fetchBlacklist(silent = false) {
+            if (!supabaseClient) return;
+
+            const { data, error } = await supabaseClient
+                .from("blacklist")
+                .select("*")
+                .order("created_at", { ascending: false });
+
+            if (error) {
+                console.error("Blacklist fetching error:", error);
+                return;
+            }
+
+            blacklistData = data || [];
+            renderBlacklist(blacklistData);
+        }
+
+        // Render Blacklist
+        function renderBlacklist(data) {
+            blacklistContainer.innerHTML = "";
+
+            if (data.length === 0) {
+                blacklistContainer.innerHTML = `
+                    <div class="col-span-full text-center p-8 text-slate-500 glass-card">
+                        <i class="fa-solid fa-circle-check text-3xl mb-2 text-emerald-500 block"></i>
+                        Qora ro'yxat bo'sh. Taqiqlangan qurilmalar yo'q.
+                    </div>
+                `;
+                return;
+            }
+
+            data.forEach(item => {
+                const dateString = new Date(item.created_at).toLocaleString("uz-UZ", {
+                    year: 'numeric', month: '2-digit', day: '2-digit',
+                    hour: '2-digit', minute: '2-digit'
+                });
+
+                const card = document.createElement("div");
+                card.className = "glass-card p-4 border border-red-500/10 flex flex-col justify-between gap-3";
+                card.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-start">
+                            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border bg-red-500/10 text-red-400 border-red-500/20">
+                                Bloklangan
+                            </span>
+                            <span class="text-[10px] text-slate-400 font-mono">
+                                ${dateString}
+                            </span>
+                        </div>
+                        <div class="space-y-1">
+                            <p class="text-xs text-white font-mono cursor-pointer hover:text-blue-400" onclick="copyToClipboard('${item.device_id}')">
+                                <strong>Device ID:</strong> ${truncateString(item.device_id, 24)} <i class="fa-solid fa-copy text-[8px]"></i>
+                            </p>
+                            <p class="text-xs text-slate-400"><strong>Sabab:</strong> ${escapeHtml(item.reason || 'Noma\'lum xavfli faoliyat')}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end pt-2 border-t border-slate-800/40">
+                        <button onclick="removeFromBlacklist('${item.id}', '${item.device_id}')" class="py-1 px-3 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 rounded border border-emerald-500/20 text-[10px] font-semibold">
+                            Qulfdan chiqarish
+                        </button>
+                    </div>
+                `;
+                blacklistContainer.appendChild(card);
+            });
+        }
+
+        // Add to Blacklist
+        async function promptAddBlacklist() {
+            const { value: formValues } = await Swal.fire({
+                title: 'Qurilmani qora ro\'yxatga kiritish',
+                html:
+                    '<input id="swal-device-id" class="swal2-input bg-slate-900 border border-slate-800 text-xs font-mono text-white rounded p-2.5 w-full mb-3" placeholder="Qurilma (Device) ID kaliti">' +
+                    '<input id="swal-reason" class="swal2-input bg-slate-900 border border-slate-800 text-xs text-white rounded p-2.5 w-full" placeholder="Bloklash sababi (Masalan: Xizmatni o\'chirishga urindi)">',
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'Bloklash',
+                cancelButtonText: 'Bekor qilish',
+                preConfirm: () => {
+                    const devId = document.getElementById('swal-device-id').value.trim();
+                    const reason = document.getElementById('swal-reason').value.trim();
+                    if (!devId) {
+                        Swal.showValidationMessage('Device ID kiritish shart!');
+                        return false;
+                    }
+                    return { deviceId: devId, reason: reason };
+                }
+            });
+
+            if (formValues) {
+                // If it is in licenses, delete it from licenses first
+                const { error: delErr } = await supabaseClient.from("licenses").delete().eq("device_id", formValues.deviceId);
+                
+                const { error } = await supabaseClient
+                    .from("blacklist")
+                    .insert([{ device_id: formValues.deviceId, reason: formValues.reason }]);
+
+                if (error) {
+                    Swal.fire({ icon: 'error', title: 'Xatolik', text: error.message });
+                } else {
+                    Swal.fire({ icon: 'success', title: 'Qurilma bloklandi!', timer: 1500, showConfirmButton: false });
+                    fetchBlacklist();
+                    fetchLicenses();
+                }
+            }
+        }
+
+        // Direct Quick Blacklist helper (for alert popup)
+        window.blacklistDeviceDirectly = async function(deviceId, employeeName, reason) {
+            Swal.fire({ title: 'Bloklanmoqda...', didOpen: () => Swal.showLoading() });
+            
+            // Delete license
+            await supabaseClient.from("licenses").delete().eq("device_id", deviceId);
+            
+            // Add to blacklist
+            const { error } = await supabaseClient
+                .from("blacklist")
+                .insert([{ device_id: deviceId, reason: `Xodim: ${employeeName}. Sabab: ${reason}` }]);
+
+            if (error) {
+                Swal.fire({ icon: 'error', title: 'Xatolik', text: error.message });
+            } else {
+                // Clear the alert from the screen
+                await supabaseClient.from("security_alerts").delete().eq("device_id", deviceId);
+                Swal.fire({ icon: 'success', title: 'Qurilma qora ro\'yxatga olindi!', timer: 1500, showConfirmButton: false });
+                fetchBlacklist();
+                fetchLicenses();
+                fetchAlerts();
+            }
+        }
+
+        // Remove from Blacklist
+        window.removeFromBlacklist = async function(id, deviceId) {
+            const result = await Swal.fire({
+                title: 'Qora ro\'yxatdan chiqarish?',
+                text: `Qurilma (${truncateString(deviceId, 12)}) qayta litsenziya olishi mumkin bo'ladi.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ha, ochish',
+                cancelButtonText: 'Bekor qilish'
+            });
+
+            if (result.isConfirmed) {
+                const { error } = await supabaseClient.from("blacklist").delete().eq("id", id);
+                if (error) {
+                    Swal.fire({ icon: 'error', title: 'Xatolik', text: error.message });
+                } else {
+                    Swal.fire({ icon: 'success', title: 'Qulf ochildi!', timer: 1500, showConfirmButton: false });
+                    fetchBlacklist();
+                }
+            }
+        }
+
+        // Fetch Security Alerts & Show Live Popup Notifications
         async function fetchAlerts(silent = false) {
             if (!supabaseClient) return;
 
@@ -690,7 +904,6 @@ create policy "Allow Admin full access to security_alerts" on public.security_al
                 .order("created_at", { ascending: false });
 
             if (error) {
-                // If table doesn't exist, show setup notice
                 if (error.code === "P0001" || error.message.includes("does not exist")) {
                     sqlSetupNotice.classList.remove("hidden");
                 }
@@ -707,10 +920,60 @@ create policy "Allow Admin full access to security_alerts" on public.security_al
                 alertsBadge.classList.remove("hidden");
                 alertsCountBadge.innerText = alertsData.length;
                 alertsCountBadge.classList.remove("hidden");
+
+                // Check for new un-notified critical alerts to show popup
+                alertsData.forEach(alert => {
+                    if (!notifiedAlertIds.has(alert.id)) {
+                        notifiedAlertIds.add(alert.id);
+                        
+                        // Critical threat popup trigger (debugger, clock, services.msc stop attempt)
+                        showCriticalAlertPopup(alert);
+                    }
+                });
             } else {
                 alertsBadge.classList.add("hidden");
                 alertsCountBadge.classList.add("hidden");
             }
+        }
+
+        // Live Real-Time Critical Alert Popup Modal
+        function showCriticalAlertPopup(alert) {
+            let detailsUz = alert.details;
+            let iconText = "🚨 Xavfli Amal Aniqlandi!";
+            
+            if (alert.alert_type === "SERVICE_STOP_ATTEMPT") {
+                iconText = "🛑 Xizmatni O'chirishga Urinish!";
+            } else if (alert.alert_type === "DEBUGGER_DETECTION") {
+                iconText = "🪲 Buzish/Hacking Urinishi!";
+            } else if (alert.alert_type === "CLOCK_TAMPER") {
+                iconText = "⏳ Soat O'zgartirildi!";
+            }
+
+            Swal.fire({
+                icon: 'warning',
+                title: iconText,
+                html: `
+                    <div class="text-left space-y-3 text-sm border-t border-slate-800 pt-3">
+                        <p class="text-red-400 font-bold">FAVQULODDA XAFVLI URINISh ANIQLaNDI!</p>
+                        <p><strong>Kompyuter nomi (PC Name):</strong> <span class="text-slate-300 font-mono">${escapeHtml(alert.pc_name || 'Noma\'lum')}</span></p>
+                        <p><strong>Foydalanuvchi (PC User):</strong> <span class="text-slate-300 font-mono">${escapeHtml(alert.pc_user || 'Noma\'lum')}</span></p>
+                        <p><strong>Xodim:</strong> <span class="text-blue-400 font-medium">${escapeHtml(alert.employee_name || 'Noma\'lum')}</span></p>
+                        <p><strong>Device ID:</strong> <span class="text-slate-400 font-mono text-xs block bg-slate-950 p-2 rounded mt-1 border border-slate-900 overflow-x-auto">${alert.device_id}</span></p>
+                        <p><strong>Amal ta'rifi:</strong> <span class="text-yellow-400 block mt-1">${escapeHtml(alert.details)}</span></p>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Qora ro\'yxatga kiritish',
+                cancelButtonText: 'Xabarni o\'chirish (Dismiss)'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    blacklistDeviceDirectly(alert.device_id, alert.employee_name || 'Noma\'lum', alert.details);
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    deleteAlert(alert.id);
+                }
+            });
         }
 
         // Render Security Alerts
@@ -732,7 +995,6 @@ create policy "Allow Admin full access to security_alerts" on public.security_al
                     month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'
                 });
 
-                // Set type-based styling and icons
                 let iconClass = "fa-solid fa-triangle-exclamation text-yellow-500";
                 let typeLabel = alert.alert_type;
                 let cardBorderClass = "border-red-500/10";
@@ -744,7 +1006,7 @@ create policy "Allow Admin full access to security_alerts" on public.security_al
                     cardBorderClass = "border-red-500/30 shadow-lg shadow-red-500/5";
                     badgeClass = "bg-red-500/10 text-red-400 border-red-500/20";
                 } else if (alert.alert_type === "CLOCK_TAMPER") {
-                    iconClass = "fa-solid fa-clock-rotate-left text-orange-500 animate-spin";
+                    iconClass = "fa-solid fa-clock-rotate-left text-orange-500";
                     typeLabel = "Vaqt O'zgartirildi";
                     cardBorderClass = "border-orange-500/20";
                     badgeClass = "bg-orange-500/10 text-orange-400 border-orange-500/20";
@@ -757,6 +1019,11 @@ create policy "Allow Admin full access to security_alerts" on public.security_al
                     iconClass = "fa-solid fa-ban text-red-400";
                     typeLabel = "Taqiqlangan Ulanish";
                     cardBorderClass = "border-red-500/20";
+                    badgeClass = "bg-red-500/10 text-red-400 border-red-500/20";
+                } else if (alert.alert_type === "SERVICE_STOP_ATTEMPT") {
+                    iconClass = "fa-solid fa-power-off text-red-500";
+                    typeLabel = "Xizmat O'chirilishi";
+                    cardBorderClass = "border-red-500/30";
                     badgeClass = "bg-red-500/10 text-red-400 border-red-500/20";
                 }
 
@@ -779,10 +1046,10 @@ create policy "Allow Admin full access to security_alerts" on public.security_al
                             </div>
                             <div class="space-y-1">
                                 <p class="text-xs text-white font-medium">${escapeHtml(alert.details || '')}</p>
-                                <div class="text-[10px] text-slate-400 flex flex-wrap gap-x-2 gap-y-1 pt-1 font-mono">
+                                <div class="text-[10px] text-slate-400 flex flex-col gap-1 pt-1 font-mono">
+                                    <span>PC Nomi: <strong class="text-slate-300 font-sans">${escapeHtml(alert.pc_name || 'Noma\'lum')}</strong> (${escapeHtml(alert.pc_user || 'Noma\'lum')})</span>
                                     <span>Xodim: <strong class="text-slate-300 font-sans">${escapeHtml(alert.employee_name || 'Noma\'lum')}</strong></span>
-                                    <span>•</span>
-                                    <span class="cursor-pointer hover:text-blue-400" onclick="copyToClipboard('${alert.device_id}')">
+                                    <span class="cursor-pointer hover:text-blue-400 flex items-center gap-1" onclick="copyToClipboard('${alert.device_id}')">
                                         ID: ${truncateString(alert.device_id, 12)} <i class="fa-solid fa-copy text-[8px]"></i>
                                     </span>
                                 </div>
@@ -790,9 +1057,12 @@ create policy "Allow Admin full access to security_alerts" on public.security_al
                         </div>
                     </div>
                     
-                    <div class="flex justify-end pt-2 border-t border-slate-800/40">
-                        <button onclick="deleteAlert('${alert.id}')" class="py-1 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 text-[10px] font-semibold flex items-center gap-1">
-                            <i class="fa-solid fa-check"></i> Hal qilindi (O'chirish)
+                    <div class="flex justify-end gap-2 pt-2 border-t border-slate-800/40">
+                        <button onclick="blacklistDeviceDirectly('${alert.device_id}', '${alert.employee_name || 'Noma\'lum'}', '${alert.details}')" class="py-1 px-2.5 bg-red-600/10 hover:bg-red-600/20 text-red-400 rounded border border-red-500/20 text-[10px] font-semibold flex items-center gap-1">
+                            <i class="fa-solid fa-ban"></i> Bloklash (Qora Ro'yxat)
+                        </button>
+                        <button onclick="deleteAlert('${alert.id}')" class="py-1 px-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 text-[10px] font-semibold flex items-center gap-1">
+                            <i class="fa-solid fa-check"></i> O'chirish
                         </button>
                     </div>
                 `;
@@ -826,7 +1096,7 @@ create policy "Allow Admin full access to security_alerts" on public.security_al
 
             if (result.isConfirmed) {
                 Swal.fire({ title: 'Tozalanmoqda...', didOpen: () => Swal.showLoading() });
-                const { error } = await supabaseClient.from("security_alerts").delete().neq("id", "00000000-0000-0000-0000-000000000000"); // Delete all
+                const { error } = await supabaseClient.from("security_alerts").delete().neq("id", "00000000-0000-0000-0000-000000000000");
                 
                 if (error) {
                     Swal.fire({ icon: 'error', title: 'Xatolik', text: error.message });
@@ -902,13 +1172,38 @@ create policy "Allow Admin full access to security_alerts" on public.security_al
             licenseModal.classList.remove("hidden");
         }
 
-        // Save License Form Submit
+        // Save License Form Submit (With Blacklist Conflict Resolution)
         licenseForm.addEventListener("submit", async (e) => {
             e.preventDefault();
             const id = licenseId.value;
             const name = employeeName.value.trim();
             const devId = deviceId.value.trim();
             const expAt = new Date(expiresAt.value).toISOString();
+
+            // Conflict Check: Check if Device ID exists in blacklist first
+            const isBlacklisted = blacklistData.some(b => b.device_id === devId);
+            if (isBlacklisted) {
+                const confirmConflict = await Swal.fire({
+                    title: 'Qora ro\'yxat ziddiyati!',
+                    text: 'Ushbu Device ID hozirda qora ro\'yxatda bor. Litsenziya berish uchun u qora ro\'yxatdan o\'chirilishi kerak. Shunda ham ruxsat berasizmi?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ha, ruxsat berish (Ochish)',
+                    cancelButtonText: 'Bekor qilish'
+                });
+
+                if (!confirmConflict.isConfirmed) {
+                    return; // Abort
+                }
+
+                // Delete from blacklist first
+                Swal.fire({ title: 'Qora ro\'yxatdan o\'chirilmoqda...', didOpen: () => Swal.showLoading() });
+                const { error: blacklistErr } = await supabaseClient.from("blacklist").delete().eq("device_id", devId);
+                if (blacklistErr) {
+                    Swal.fire({ icon: 'error', title: 'Xatolik', text: 'Qora ro\'yxatdan o\'chirib bo\'lmadi: ' + blacklistErr.message });
+                    return;
+                }
+            }
 
             Swal.fire({ title: 'Saqlanmoqda...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
 
@@ -933,6 +1228,7 @@ create policy "Allow Admin full access to security_alerts" on public.security_al
                 Swal.fire({ icon: 'success', title: 'Muvaffaqiyatli saqlandi', timer: 1500, showConfirmButton: false });
                 closeModal();
                 fetchLicenses();
+                fetchBlacklist();
             }
         });
 
