@@ -990,11 +990,24 @@ create policy "Allow Admin full access to activity_logs" on public.activity_logs
                     hour: '2-digit', minute: '2-digit'
                 });
 
+                // Check if updated_at is within the last 90 seconds
+                const lastSeen = item.updated_at ? new Date(item.updated_at) : null;
+                const isOnline = lastSeen && (new Date() - lastSeen) < 90000 && item.is_active;
+                
+                const onlineBadge = isOnline 
+                    ? '<span class="inline-flex items-center gap-1 text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-medium"><span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span> Tarmoqda</span>' 
+                    : '<span class="inline-flex items-center gap-1 text-[10px] bg-slate-500/10 text-slate-400 border border-slate-500/20 px-2 py-0.5 rounded-full font-medium">Oflayn</span>';
+
                 // Desktop row creation
                 const row = document.createElement("tr");
                 row.className = "hover:bg-slate-800/20 transition-all border-b border-slate-800/40";
                 row.innerHTML = `
-                    <td class="p-4 font-medium text-white">${escapeHtml(item.employee_name)}</td>
+                    <td class="p-4 font-medium text-white">
+                        <div class="flex items-center gap-2">
+                            <span>${escapeHtml(item.employee_name)}</span>
+                            ${onlineBadge}
+                        </div>
+                    </td>
                     <td class="p-4 font-mono text-xs text-slate-400 group relative">
                         <span class="cursor-pointer hover:text-blue-400" onclick="copyToClipboard('${item.device_id}')" title="Nusxalash">
                             ${truncateString(item.device_id, 24)}
@@ -1033,7 +1046,10 @@ create policy "Allow Admin full access to activity_logs" on public.activity_logs
                 card.innerHTML = `
                     <div class="flex justify-between items-start">
                         <div>
-                            <h4 class="font-bold text-white">${escapeHtml(item.employee_name)}</h4>
+                            <h4 class="font-bold text-white flex items-center gap-2">
+                                <span>${escapeHtml(item.employee_name)}</span>
+                                ${onlineBadge}
+                            </h4>
                             <p class="text-[10px] font-mono text-slate-400 mt-1 cursor-pointer flex items-center gap-1" onclick="copyToClipboard('${item.device_id}')">
                                 <span>ID: ${truncateString(item.device_id, 12)}</span>
                                 <i class="fa-solid fa-copy text-slate-500"></i>
