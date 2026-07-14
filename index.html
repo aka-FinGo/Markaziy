@@ -23,7 +23,7 @@
     <style>
         body {
             font-family: 'Outfit', sans-serif;
-            background: radial-gradient(circle at 50% 50%, #1a1f3c 0%, #0d1021 100%);
+            background: radial-gradient(circle at 50% 50%, #12162d 0%, #070913 100%);
             min-height: 100vh;
             color: #e2e8f0;
             overflow-x: hidden;
@@ -31,32 +31,31 @@
 
         /* Glassmorphism Classes */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.07);
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 24px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5);
         }
 
         .glass-card {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.01);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.03);
             border-radius: 16px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .glass-card:hover {
-            transform: translateY(-4px);
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(255, 255, 255, 0.1);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.07);
         }
 
         .glass-input {
             background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px;
             color: white;
             transition: all 0.3s ease;
@@ -66,10 +65,10 @@
             outline: none;
             border-color: #3b82f6;
             box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.04);
         }
 
-        /* Custom Toggle Switch */
+        /* Toggle Checkbox */
         .toggle-checkbox:checked + .toggle-label {
             background-color: #10b981;
         }
@@ -77,21 +76,37 @@
             transform: translateX(100%);
         }
 
-        /* SweetAlert Custom styling */
+        /* SweetAlert Popup style styling */
         .swal2-popup {
-            background: #1e293b !important;
+            background: #111424 !important;
             color: #f8fafc !important;
             border-radius: 20px !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+
+        /* Custom scrollbar for mobile */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.01);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
     </style>
 </head>
-<body class="p-4 md:p-8 flex items-center justify-center">
+<body class="p-3 md:p-6 flex items-center justify-center">
 
     <!-- ================= LOGIN SCREEN ================= -->
-    <div id="loginScreen" class="w-full max-w-md p-8 glass-panel animate-fade-in">
+    <div id="loginScreen" class="w-full max-w-md p-6 md:p-8 glass-panel animate-fade-in my-8">
         <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-600/20 text-blue-500 text-3xl mb-4 border border-blue-500/30">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-600/10 text-blue-400 text-3xl mb-4 border border-blue-500/20">
                 <i class="fa-solid fa-shield-halved"></i>
             </div>
             <h2 class="text-2xl font-bold text-white tracking-wide">Aristokrat Vault</h2>
@@ -119,7 +134,7 @@
                 </div>
             </div>
 
-            <button type="submit" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-12 transition-all duration-300 transform active:scale-95 shadow-lg shadow-blue-500/20 flex justify-center items-center gap-2">
+            <button type="submit" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-all duration-300 transform active:scale-95 shadow-lg shadow-blue-500/20 flex justify-center items-center gap-2">
                 <span>Tizimga Kirish</span>
                 <i class="fa-solid fa-right-to-bracket"></i>
             </button>
@@ -127,121 +142,205 @@
     </div>
 
     <!-- ================= DASHBOARD SCREEN ================= -->
-    <div id="dashboardScreen" class="w-full max-w-6xl glass-panel p-6 md:p-8 hidden">
-        <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 border-b border-slate-700/50 pb-6">
+    <div id="dashboardScreen" class="w-full max-w-5xl glass-panel p-4 md:p-8 hidden my-4">
+        <!-- Header -->
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-slate-800/80 pb-6">
             <div>
-                <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-wider flex items-center gap-3">
-                    <span class="text-blue-500"><i class="fa-solid fa-server animate-pulse"></i></span>
+                <h1 class="text-xl md:text-2xl font-extrabold text-white tracking-wider flex items-center gap-3">
+                    <span class="text-blue-400"><i class="fa-solid fa-server animate-pulse"></i></span>
                     Aristokrat Vault Control
                 </h1>
-                <p class="text-slate-400 text-sm mt-1">Xodimlar litsenziyalari va qurilma ruxsatlarini boshqarish</p>
+                <p class="text-slate-400 text-xs md:text-sm mt-1">Litsenziyalar va xavfsizlik monitoringi tizimi</p>
             </div>
             
-            <div class="flex items-center gap-4 w-full md:w-auto justify-end">
-                <span class="text-slate-300 text-sm hidden sm:inline"><i class="fa-solid fa-user-tie mr-2"></i>Admin Session</span>
-                <button id="logoutBtn" class="py-2.5 px-4 bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-500/30 rounded-lg text-sm transition-all duration-200 flex items-center gap-2">
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                <span class="text-slate-300 text-xs md:text-sm"><i class="fa-solid fa-user-tie mr-1.5"></i>Admin</span>
+                <button id="logoutBtn" class="py-1.5 px-3 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/20 rounded-lg text-xs md:text-sm transition-all duration-200 flex items-center gap-1.5">
                     <span>Chiqish</span>
                     <i class="fa-solid fa-power-off"></i>
                 </button>
             </div>
         </header>
 
-        <!-- Stats Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <div class="glass-card p-6 flex items-center justify-between">
-                <div>
-                    <p class="text-slate-400 text-sm uppercase tracking-wider font-semibold">Jami Xodimlar</p>
-                    <h3 id="statTotal" class="text-3xl font-bold text-white mt-1">0</h3>
-                </div>
-                <div class="text-4xl text-blue-500/40"><i class="fa-solid fa-users"></i></div>
-            </div>
-
-            <div class="glass-card p-6 flex items-center justify-between">
-                <div>
-                    <p class="text-slate-400 text-sm uppercase tracking-wider font-semibold">Faol Qurilmalar</p>
-                    <h3 id="statActive" class="text-3xl font-bold text-emerald-400 mt-1">0</h3>
-                </div>
-                <div class="text-4xl text-emerald-500/40"><i class="fa-solid fa-circle-check"></i></div>
-            </div>
-
-            <div class="glass-card p-6 flex items-center justify-between sm:col-span-2 lg:col-span-1">
-                <div>
-                    <p class="text-slate-400 text-sm uppercase tracking-wider font-semibold">Muddati o'tganlar</p>
-                    <h3 id="statExpired" class="text-3xl font-bold text-red-400 mt-1">0</h3>
-                </div>
-                <div class="text-4xl text-red-500/40"><i class="fa-solid fa-hourglass-end"></i></div>
-            </div>
-        </div>
-
-        <!-- Action Bar -->
-        <div class="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 mb-6">
-            <div class="relative flex-1 max-w-md">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </span>
-                <input type="text" id="searchInput" class="w-full pl-10 pr-4 py-2.5 glass-input text-sm" placeholder="Xodim ismi yoki Device ID bo'yicha qidirish...">
-            </div>
-
-            <button id="addLicenseBtn" class="py-2.5 px-5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/10">
-                <i class="fa-solid fa-plus"></i>
-                <span>Yangi Xodim Qo'shish</span>
+        <!-- Dynamic Navigation Tabs -->
+        <div class="flex gap-2 md:gap-4 mb-6 border-b border-slate-800 pb-px">
+            <button id="tabLicensesBtn" class="py-2.5 px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2">
+                <i class="fa-solid fa-id-card"></i>
+                <span>Litsenziyalar</span>
+            </button>
+            <button id="tabAlertsBtn" class="py-2.5 px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 relative">
+                <i class="fa-solid fa-triangle-exclamation text-yellow-500"></i>
+                <span>Xavfsizlik Tizimi</span>
+                <span id="alertsBadge" class="absolute top-2 right-1.5 w-2 h-2 bg-red-500 rounded-full hidden animate-ping"></span>
+                <span id="alertsCountBadge" class="bg-red-500/20 text-red-400 text-[10px] px-1.5 py-px rounded-full hidden">0</span>
             </button>
         </div>
 
-        <!-- License Table -->
-        <div class="overflow-x-auto w-full glass-card rounded-xl">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="border-b border-slate-700/50 bg-slate-800/20 text-slate-300 text-sm uppercase tracking-wider">
-                        <th class="p-4 font-semibold">Xodim Ismi</th>
-                        <th class="p-4 font-semibold">Qurilma ID (Device ID)</th>
-                        <th class="p-4 font-semibold">Tugash Muddati</th>
-                        <th class="p-4 font-semibold text-center">Holati</th>
-                        <th class="p-4 font-semibold text-center">Amallar</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody" class="divide-y divide-slate-800/50 text-slate-200 text-sm">
-                    <!-- Dynamic Rows -->
-                </tbody>
-            </table>
+        <!-- ================= TAB 1: LICENSES VIEW ================= -->
+        <div id="licensesView" class="space-y-6">
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="glass-card p-4 flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-[11px] uppercase tracking-wider font-semibold">Jami Xodimlar</p>
+                        <h3 id="statTotal" class="text-2xl font-bold text-white mt-0.5">0</h3>
+                    </div>
+                    <div class="text-3xl text-blue-500/30"><i class="fa-solid fa-users"></i></div>
+                </div>
+
+                <div class="glass-card p-4 flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-[11px] uppercase tracking-wider font-semibold">Faol Qurilmalar</p>
+                        <h3 id="statActive" class="text-2xl font-bold text-emerald-400 mt-0.5">0</h3>
+                    </div>
+                    <div class="text-3xl text-emerald-500/30"><i class="fa-solid fa-circle-check"></i></div>
+                </div>
+
+                <div class="glass-card p-4 flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-[11px] uppercase tracking-wider font-semibold">Muddati o'tgan</p>
+                        <h3 id="statExpired" class="text-2xl font-bold text-red-400 mt-0.5">0</h3>
+                    </div>
+                    <div class="text-3xl text-red-500/30"><i class="fa-solid fa-hourglass-end"></i></div>
+                </div>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+                <div class="relative flex-1 max-w-md">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                    </span>
+                    <input type="text" id="searchInput" class="w-full pl-9 pr-4 py-2 glass-input text-xs" placeholder="Xodim ismi yoki Device ID bo'yicha qidirish...">
+                </div>
+
+                <button id="addLicenseBtn" class="py-2 px-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg text-xs md:text-sm transition-all duration-200 flex items-center justify-center gap-1.5 shadow-lg shadow-blue-500/10">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span>Yangi Xodim Qo'shish</span>
+                </button>
+            </div>
+
+            <!-- License List (Card Grid for Mobile / Table for Desktop) -->
+            <div class="w-full">
+                <!-- Desktop Table View -->
+                <div class="hidden md:block overflow-x-auto glass-card rounded-xl">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800/80 bg-slate-900/30 text-slate-400 text-xs uppercase tracking-wider">
+                                <th class="p-4 font-semibold">Xodim Ismi</th>
+                                <th class="p-4 font-semibold">Qurilma ID (Device ID)</th>
+                                <th class="p-4 font-semibold">Tugash Muddati</th>
+                                <th class="p-4 font-semibold text-center">Holati</th>
+                                <th class="p-4 font-semibold text-center">Amallar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-slate-800/50 text-slate-300 text-xs md:text-sm">
+                            <!-- Dynamic Rows -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile Card View -->
+                <div id="mobileLicensesContainer" class="grid grid-cols-1 gap-3 md:hidden">
+                    <!-- Dynamic Cards -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 2: SECURITY ALERTS VIEW ================= -->
+        <div id="alertsView" class="space-y-6 hidden">
+            <!-- SQL Setup Alert (Only displayed if table does not exist) -->
+            <div id="sqlSetupNotice" class="hidden p-4 rounded-xl border border-yellow-500/20 bg-yellow-500/5 text-slate-300 text-xs space-y-3">
+                <div class="flex items-start gap-2.5">
+                    <i class="fa-solid fa-triangle-exclamation text-yellow-500 text-lg mt-0.5"></i>
+                    <div>
+                        <strong class="text-yellow-500 block mb-1">Xavfsizlik jadvali faollashtirilmagan!</strong>
+                        Qurilmalar buzib kirishi haqidagi hisobotlarni ko'rish uchun, Supabase console SQL Editor oynasida quyidagi kodni ishga tushiring:
+                    </div>
+                </div>
+                <div class="relative bg-slate-950/80 p-3 rounded-lg border border-slate-800 font-mono text-[10px] overflow-x-auto text-emerald-400 max-h-40">
+                    <pre id="sqlSetupText">-- security_alerts jadvalini yaratish
+create table public.security_alerts (
+    id uuid default gen_random_uuid() primary key,
+    device_id text not null,
+    employee_name text,
+    alert_type text not null,
+    details text,
+    severity text default 'HIGH' not null,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.security_alerts enable row level security;
+
+create policy "Allow public insert to security_alerts" on public.security_alerts
+    for insert to anon with check (true);
+
+create policy "Allow Admin full access to security_alerts" on public.security_alerts
+    for all to authenticated using (true);</pre>
+                    <button onclick="copySqlCode()" class="absolute top-2 right-2 px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 transition-all font-sans text-[10px] flex items-center gap-1">
+                        <i class="fa-solid fa-copy"></i> Nusxa olish
+                    </button>
+                </div>
+            </div>
+
+            <!-- Alerts Info & Actions -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div>
+                    <h2 class="text-base md:text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-bell text-red-500 animate-bounce"></i>
+                        Xavfsizlik Ogohlantirishlari
+                    </h2>
+                    <p class="text-slate-400 text-xs mt-0.5">Hacking, litsenziyani aylanib o'tish yoki soatni orqaga surish urinishlari</p>
+                </div>
+
+                <button id="clearAllAlertsBtn" class="w-full sm:w-auto py-1.5 px-3 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/20 rounded-lg text-xs md:text-sm transition-all duration-200 flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span>Barcha xabarlarni tozalash</span>
+                </button>
+            </div>
+
+            <!-- Alerts Container (Mobile & Desktop Unified Card Layout) -->
+            <div id="alertsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Dynamic Alert Cards -->
+            </div>
         </div>
     </div>
 
     <!-- ================= ADD/EDIT LICENSE MODAL ================= -->
-    <div id="licenseModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
-        <div class="w-full max-w-lg glass-panel p-6 md:p-8 relative max-h-[90vh] overflow-y-auto">
+    <div id="licenseModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="w-full max-w-md glass-panel p-6 relative max-h-[90vh] overflow-y-auto">
             <button id="closeModalBtn" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl transition-all">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
-            <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                <i class="fa-solid fa-id-card text-blue-500"></i>
+            <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                <i class="fa-solid fa-id-card text-blue-400"></i>
                 <span id="modalTitle">Yangi Litsenziya Qo'shish</span>
             </h3>
 
-            <form id="licenseForm" class="space-y-5">
+            <form id="licenseForm" class="space-y-4">
                 <input type="hidden" id="licenseId">
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2">Xodim Ismi (F.I.Sh)</label>
-                    <input type="text" id="employeeName" required class="w-full px-4 py-2.5 glass-input text-sm" placeholder="Masalan: Alisher Fayzullayev">
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Xodim Ismi (F.I.Sh)</label>
+                    <input type="text" id="employeeName" required class="w-full px-3 py-2.5 glass-input text-xs md:text-sm" placeholder="Masalan: Alisher Fayzullayev">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2">Qurilma ID (Device ID)</label>
-                    <input type="text" id="deviceId" required class="w-full px-4 py-2.5 glass-input text-sm text-xs font-mono" placeholder="Bazis MvpServer tray oynasidagi Device ID kaliti">
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Qurilma ID (Device ID)</label>
+                    <input type="text" id="deviceId" required class="w-full px-3 py-2.5 glass-input text-xs font-mono" placeholder="MvpServer tray oynasidagi Device ID kaliti">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2">Amal Qilish Muddati</label>
-                    <input type="datetime-local" id="expiresAt" required class="w-full px-4 py-2.5 glass-input text-sm">
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Amal Qilish Muddati</label>
+                    <input type="datetime-local" id="expiresAt" required class="w-full px-3 py-2.5 glass-input text-xs md:text-sm">
                 </div>
 
-                <div class="flex gap-4 pt-4 border-t border-slate-700/50">
-                    <button type="button" id="cancelModalBtn" class="flex-1 py-2.5 px-4 bg-slate-700/40 hover:bg-slate-700/60 text-slate-300 font-semibold rounded-lg text-sm transition-all duration-200">
+                <div class="flex gap-3 pt-4 border-t border-slate-800">
+                    <button type="button" id="cancelModalBtn" class="flex-1 py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-lg text-xs md:text-sm transition-all">
                         Bekor qilish
                     </button>
-                    <button type="submit" class="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg text-sm transition-all duration-200">
+                    <button type="submit" class="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg text-xs md:text-sm transition-all">
                         Saqlash
                     </button>
                 </div>
@@ -252,12 +351,14 @@
     <!-- ================= JAVASCRIPT LOGIC ================= -->
     <script>
         // Supabase configuration
-        // !!! BU YERGA O'ZINGIZNING SUPABASE URL VA ANON_KEY KALITINGIZNI QO'YING !!!
         const SUPABASE_URL = "SUPABASE_URL_PLACEHOLDER";
         const SUPABASE_ANON_KEY = "SUPABASE_ANON_KEY_PLACEHOLDER";
 
         let supabaseClient = null;
         let licensesData = [];
+        let alertsData = [];
+        let activeTab = "licenses"; // "licenses" or "alerts"
+        let refreshIntervalId = null;
 
         // Check if credentials are set
         function initSupabase() {
@@ -300,6 +401,7 @@
         const searchInput = document.getElementById("searchInput");
         const addLicenseBtn = document.getElementById("addLicenseBtn");
         const tableBody = document.getElementById("tableBody");
+        const mobileLicensesContainer = document.getElementById("mobileLicensesContainer");
         
         const licenseModal = document.getElementById("licenseModal");
         const licenseForm = document.getElementById("licenseForm");
@@ -310,6 +412,17 @@
         const modalTitle = document.getElementById("modalTitle");
         const closeModalBtn = document.getElementById("closeModalBtn");
         const cancelModalBtn = document.getElementById("cancelModalBtn");
+
+        // Tabs DOM
+        const tabLicensesBtn = document.getElementById("tabLicensesBtn");
+        const tabAlertsBtn = document.getElementById("tabAlertsBtn");
+        const licensesView = document.getElementById("licensesView");
+        const alertsView = document.getElementById("alertsView");
+        const alertsBadge = document.getElementById("alertsBadge");
+        const alertsCountBadge = document.getElementById("alertsCountBadge");
+        const alertsContainer = document.getElementById("alertsContainer");
+        const clearAllAlertsBtn = document.getElementById("clearAllAlertsBtn");
+        const sqlSetupNotice = document.getElementById("sqlSetupNotice");
 
         // Initialization
         document.addEventListener("DOMContentLoaded", () => {
@@ -324,6 +437,11 @@
             supabaseClient.auth.onAuthStateChange((_event, session) => {
                 handleSession(session);
             });
+
+            // Set up Tabs switching
+            tabLicensesBtn.addEventListener("click", () => switchTab("licenses"));
+            tabAlertsBtn.addEventListener("click", () => switchTab("alerts"));
+            clearAllAlertsBtn.addEventListener("click", clearAllAlerts);
         });
 
         function handleSession(session) {
@@ -331,10 +449,42 @@
                 loginScreen.classList.add("hidden");
                 dashboardScreen.classList.remove("hidden");
                 fetchLicenses();
+                fetchAlerts();
+
+                // Real-time automatic check every 10 seconds
+                if (!refreshIntervalId) {
+                    refreshIntervalId = setInterval(() => {
+                        fetchLicenses();
+                        fetchAlerts(true);
+                    }, 10000);
+                }
             } else {
                 loginScreen.classList.remove("hidden");
                 dashboardScreen.classList.add("hidden");
                 tableBody.innerHTML = "";
+                mobileLicensesContainer.innerHTML = "";
+                alertsContainer.innerHTML = "";
+                if (refreshIntervalId) {
+                    clearInterval(refreshIntervalId);
+                    refreshIntervalId = null;
+                }
+            }
+        }
+
+        // Tab Switch
+        function switchTab(tab) {
+            activeTab = tab;
+            if (tab === "licenses") {
+                tabLicensesBtn.className = "py-2.5 px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2";
+                tabAlertsBtn.className = "py-2.5 px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 relative";
+                licensesView.classList.remove("hidden");
+                alertsView.classList.add("hidden");
+            } else {
+                tabAlertsBtn.className = "py-2.5 px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 relative";
+                tabLicensesBtn.className = "py-2.5 px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2";
+                alertsView.classList.remove("hidden");
+                licensesView.classList.add("hidden");
+                fetchAlerts();
             }
         }
 
@@ -351,27 +501,14 @@
             });
 
             try {
-                if (!supabaseClient) {
-                    throw new Error("Supabase mijozi ishga tushmagan! Kalitlar o'rnatilmagan bo'lishi mumkin.");
-                }
-
                 const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-
                 if (error) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Kirish taqiqlandi',
-                        text: error.message
-                    });
+                    Swal.fire({ icon: 'error', title: 'Kirish taqiqlandi', text: error.message });
                 } else {
                     Swal.close();
                 }
             } catch (err) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Tizim xatosi',
-                    text: err.message || err
-                });
+                Swal.fire({ icon: 'error', title: 'Tizim xatosi', text: err.message || err });
             }
         });
 
@@ -388,7 +525,7 @@
                 .order("created_at", { ascending: false });
 
             if (error) {
-                console.error("Xato:", error);
+                console.error("Litsenziya yuklashda xato:", error);
                 return;
             }
 
@@ -408,11 +545,19 @@
             statExpired.innerText = expired;
         }
 
-        // Render Licenses to Table
+        // Render Licenses (Responsive Grid & Table)
         function renderLicenses(data) {
             tableBody.innerHTML = "";
+            mobileLicensesContainer.innerHTML = "";
 
             if (data.length === 0) {
+                const emptyState = `
+                    <div class="text-center p-8 text-slate-500 w-full glass-card">
+                        <i class="fa-solid fa-folder-open text-3xl mb-2 block"></i>
+                        Litsenziyalar topilmadi
+                    </div>
+                `;
+                mobileLicensesContainer.innerHTML = emptyState;
                 tableBody.innerHTML = `
                     <tr>
                         <td colspan="5" class="text-center p-8 text-slate-500">
@@ -431,12 +576,13 @@
                     hour: '2-digit', minute: '2-digit'
                 });
 
+                // Desktop row creation
                 const row = document.createElement("tr");
-                row.className = "hover:bg-slate-800/30 transition-all border-b border-slate-800/40";
+                row.className = "hover:bg-slate-800/20 transition-all border-b border-slate-800/40";
                 row.innerHTML = `
                     <td class="p-4 font-medium text-white">${escapeHtml(item.employee_name)}</td>
                     <td class="p-4 font-mono text-xs text-slate-400 group relative">
-                        <span class="cursor-pointer hover:text-blue-400" onclick="copyToClipboard('${item.device_id}')" title="Nusxalash uchun bosing">
+                        <span class="cursor-pointer hover:text-blue-400" onclick="copyToClipboard('${item.device_id}')" title="Nusxalash">
                             ${truncateString(item.device_id, 24)}
                             <i class="fa-solid fa-copy ml-1 opacity-0 group-hover:opacity-100 transition-opacity"></i>
                         </span>
@@ -448,7 +594,7 @@
                         <div class="inline-flex items-center">
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" class="sr-only toggle-checkbox" ${item.is_active ? 'checked' : ''} onchange="toggleActiveState('${item.id}', this.checked)">
-                                <div class="w-11 h-6 bg-slate-700 rounded-full toggle-label transition-colors duration-200 border border-slate-600">
+                                <div class="w-11 h-6 bg-slate-800 rounded-full toggle-label transition-colors duration-200 border border-slate-700">
                                     <div class="w-4 h-4 bg-white rounded-full toggle-dot absolute left-1 top-1 transition-transform duration-200 shadow-md"></div>
                                 </div>
                             </label>
@@ -456,16 +602,54 @@
                     </td>
                     <td class="p-4 text-center">
                         <div class="flex items-center justify-center gap-3">
-                            <button onclick="editLicense('${item.id}')" class="text-blue-400 hover:text-blue-300 text-lg transition-all" title="Tahrirlash">
-                                <i class="fa-solid fa-pen-to-square"></i>
+                            <button onclick="editLicense('${item.id}')" class="text-blue-400 hover:text-blue-300 text-lg transition-all">
+                                <i class="fa-solid fa-pen-to-square text-xs md:text-sm"></i>
                             </button>
-                            <button onclick="deleteLicense('${item.id}')" class="text-red-400 hover:text-red-300 text-lg transition-all" title="O'chirish">
-                                <i class="fa-solid fa-trash-can"></i>
+                            <button onclick="deleteLicense('${item.id}')" class="text-red-400 hover:text-red-300 text-lg transition-all">
+                                <i class="fa-solid fa-trash-can text-xs md:text-sm"></i>
                             </button>
                         </div>
                     </td>
                 `;
                 tableBody.appendChild(row);
+
+                // Mobile card creation
+                const card = document.createElement("div");
+                card.className = "glass-card p-4 space-y-3";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-bold text-white">${escapeHtml(item.employee_name)}</h4>
+                            <p class="text-[10px] font-mono text-slate-400 mt-1 cursor-pointer flex items-center gap-1" onclick="copyToClipboard('${item.device_id}')">
+                                <span>ID: ${truncateString(item.device_id, 12)}</span>
+                                <i class="fa-solid fa-copy text-slate-500"></i>
+                            </p>
+                        </div>
+                        <div class="flex items-center">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only toggle-checkbox" ${item.is_active ? 'checked' : ''} onchange="toggleActiveState('${item.id}', this.checked)">
+                                <div class="w-9 h-5 bg-slate-800 rounded-full toggle-label transition-colors duration-200 border border-slate-700">
+                                    <div class="w-3.5 h-3.5 bg-white rounded-full toggle-dot absolute left-0.5 top-0.5 transition-transform duration-200 shadow-md"></div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center pt-2 border-t border-slate-800/50 text-xs">
+                        <span class="${isExpired ? 'text-red-400 font-semibold' : 'text-slate-400'}">
+                            Muddati: ${expiryString.split(',')[0]}
+                        </span>
+                        <div class="flex gap-2">
+                            <button onclick="editLicense('${item.id}')" class="py-1 px-2.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded text-[10px] font-semibold">
+                                Tahrirlash
+                            </button>
+                            <button onclick="deleteLicense('${item.id}')" class="py-1 px-2.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded text-[10px] font-semibold">
+                                O'chirish
+                            </button>
+                        </div>
+                    </div>
+                `;
+                mobileLicensesContainer.appendChild(card);
             });
         }
 
@@ -480,7 +664,6 @@
                 Swal.fire({ icon: 'error', title: 'Xatolik', text: error.message });
                 fetchLicenses(); // Rollback UI state
             } else {
-                // Toast notification
                 const Toast = Swal.mixin({
                     toast: true,
                     position: 'top-end',
@@ -493,6 +676,164 @@
                     title: isChecked ? 'Ruxsat faollashtirildi' : 'Ruxsat bekor qilindi'
                 });
                 updateStats(licensesData.map(item => item.id === id ? { ...item, is_active: isChecked } : item));
+                fetchLicenses();
+            }
+        }
+
+        // Fetch Security Alerts
+        async function fetchAlerts(silent = false) {
+            if (!supabaseClient) return;
+
+            const { data, error } = await supabaseClient
+                .from("security_alerts")
+                .select("*")
+                .order("created_at", { ascending: false });
+
+            if (error) {
+                // If table doesn't exist, show setup notice
+                if (error.code === "P0001" || error.message.includes("does not exist")) {
+                    sqlSetupNotice.classList.remove("hidden");
+                }
+                console.error("Alerts fetching error:", error);
+                return;
+            }
+
+            sqlSetupNotice.classList.add("hidden");
+            alertsData = data || [];
+            renderAlerts(alertsData);
+
+            // Update tab badge status
+            if (alertsData.length > 0) {
+                alertsBadge.classList.remove("hidden");
+                alertsCountBadge.innerText = alertsData.length;
+                alertsCountBadge.classList.remove("hidden");
+            } else {
+                alertsBadge.classList.add("hidden");
+                alertsCountBadge.classList.add("hidden");
+            }
+        }
+
+        // Render Security Alerts
+        function renderAlerts(data) {
+            alertsContainer.innerHTML = "";
+
+            if (data.length === 0) {
+                alertsContainer.innerHTML = `
+                    <div class="col-span-full text-center p-8 text-slate-500 glass-card">
+                        <i class="fa-solid fa-shield-check text-3xl mb-2 text-emerald-500 block"></i>
+                        Hech qanday ogohlantirish xabarlari yo'q. Tizim xavfsiz.
+                    </div>
+                `;
+                return;
+            }
+
+            data.forEach(alert => {
+                const timeString = new Date(alert.created_at).toLocaleString("uz-UZ", {
+                    month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'
+                });
+
+                // Set type-based styling and icons
+                let iconClass = "fa-solid fa-triangle-exclamation text-yellow-500";
+                let typeLabel = alert.alert_type;
+                let cardBorderClass = "border-red-500/10";
+                let badgeClass = "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
+
+                if (alert.alert_type === "DEBUGGER_DETECTION") {
+                    iconClass = "fa-solid fa-bug text-red-500 animate-pulse";
+                    typeLabel = "Hacking / Debugger";
+                    cardBorderClass = "border-red-500/30 shadow-lg shadow-red-500/5";
+                    badgeClass = "bg-red-500/10 text-red-400 border-red-500/20";
+                } else if (alert.alert_type === "CLOCK_TAMPER") {
+                    iconClass = "fa-solid fa-clock-rotate-left text-orange-500 animate-spin";
+                    typeLabel = "Vaqt O'zgartirildi";
+                    cardBorderClass = "border-orange-500/20";
+                    badgeClass = "bg-orange-500/10 text-orange-400 border-orange-500/20";
+                } else if (alert.alert_type === "UNAUTHORIZED_DEVICE") {
+                    iconClass = "fa-solid fa-user-slash text-purple-500";
+                    typeLabel = "Begona Qurilma";
+                    cardBorderClass = "border-purple-500/20";
+                    badgeClass = "bg-purple-500/10 text-purple-400 border-purple-500/20";
+                } else if (alert.alert_type === "REVOKED_DEVICE_ATTEMPT") {
+                    iconClass = "fa-solid fa-ban text-red-400";
+                    typeLabel = "Taqiqlangan Ulanish";
+                    cardBorderClass = "border-red-500/20";
+                    badgeClass = "bg-red-500/10 text-red-400 border-red-500/20";
+                }
+
+                const card = document.createElement("div");
+                card.className = `glass-card p-4 border ${cardBorderClass} flex flex-col justify-between gap-4`;
+                card.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-start">
+                            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${badgeClass}">
+                                ${typeLabel}
+                            </span>
+                            <span class="text-[10px] text-slate-400 flex items-center gap-1 font-mono">
+                                <i class="fa-regular fa-clock"></i> ${timeString}
+                            </span>
+                        </div>
+                        
+                        <div class="flex gap-3 items-start">
+                            <div class="text-xl mt-0.5 flex-shrink-0">
+                                <i class="${iconClass}"></i>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-xs text-white font-medium">${escapeHtml(alert.details || '')}</p>
+                                <div class="text-[10px] text-slate-400 flex flex-wrap gap-x-2 gap-y-1 pt-1 font-mono">
+                                    <span>Xodim: <strong class="text-slate-300 font-sans">${escapeHtml(alert.employee_name || 'Noma\'lum')}</strong></span>
+                                    <span>•</span>
+                                    <span class="cursor-pointer hover:text-blue-400" onclick="copyToClipboard('${alert.device_id}')">
+                                        ID: ${truncateString(alert.device_id, 12)} <i class="fa-solid fa-copy text-[8px]"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end pt-2 border-t border-slate-800/40">
+                        <button onclick="deleteAlert('${alert.id}')" class="py-1 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 text-[10px] font-semibold flex items-center gap-1">
+                            <i class="fa-solid fa-check"></i> Hal qilindi (O'chirish)
+                        </button>
+                    </div>
+                `;
+                alertsContainer.appendChild(card);
+            });
+        }
+
+        // Delete Single Alert
+        window.deleteAlert = async function(id) {
+            const { error } = await supabaseClient.from("security_alerts").delete().eq("id", id);
+            if (error) {
+                Swal.fire({ icon: 'error', title: 'Xatolik', text: error.message });
+            } else {
+                fetchAlerts();
+            }
+        }
+
+        // Clear All Alerts
+        async function clearAllAlerts() {
+            if (alertsData.length === 0) return;
+
+            const result = await Swal.fire({
+                title: 'Barcha ogohlantirishlarni tozalash?',
+                text: 'Ushbu operatsiyadan so\'ng barcha xavfsizlik jurnallari o\'chiriladi!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Ha, tozalash!',
+                cancelButtonText: 'Bekor qilish'
+            });
+
+            if (result.isConfirmed) {
+                Swal.fire({ title: 'Tozalanmoqda...', didOpen: () => Swal.showLoading() });
+                const { error } = await supabaseClient.from("security_alerts").delete().neq("id", "00000000-0000-0000-0000-000000000000"); // Delete all
+                
+                if (error) {
+                    Swal.fire({ icon: 'error', title: 'Xatolik', text: error.message });
+                } else {
+                    Swal.fire({ icon: 'success', title: 'Tozalandi!', timer: 1500, showConfirmButton: false });
+                    fetchAlerts();
+                }
             }
         }
 
@@ -518,6 +859,19 @@
             Toast.fire({ icon: 'success', title: 'Nusxalandi!' });
         }
 
+        // Copy SQL Code helper
+        window.copySqlCode = function() {
+            const sqlText = document.getElementById("sqlSetupText").innerText;
+            navigator.clipboard.writeText(sqlText);
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1500
+            });
+            Toast.fire({ icon: 'success', title: 'SQL kod nusxalandi!' });
+        }
+
         // Modal triggers
         addLicenseBtn.addEventListener("click", () => {
             modalTitle.innerText = "Yangi Litsenziya Qo'shish";
@@ -541,7 +895,6 @@
             employeeName.value = item.employee_name;
             deviceId.value = item.device_id;
             
-            // Format to datetime-local expected format: YYYY-MM-DDThh:mm
             const date = new Date(item.expires_at);
             const formattedDate = date.toISOString().slice(0, 16);
             expiresAt.value = formattedDate;
@@ -562,14 +915,12 @@
             let error = null;
 
             if (id) {
-                // Update
                 const { error: err } = await supabaseClient
                     .from("licenses")
                     .update({ employee_name: name, device_id: devId, expires_at: expAt, updated_at: new Date().toISOString() })
                     .eq("id", id);
                 error = err;
             } else {
-                // Insert
                 const { error: err } = await supabaseClient
                     .from("licenses")
                     .insert([{ employee_name: name, device_id: devId, expires_at: expAt }]);
@@ -603,7 +954,6 @@
 
             if (result.isConfirmed) {
                 Swal.fire({ title: 'O\'chirilmoqda...', didOpen: () => Swal.showLoading() });
-
                 const { error } = await supabaseClient.from("licenses").delete().eq("id", id);
 
                 if (error) {
