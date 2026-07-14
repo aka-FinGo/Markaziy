@@ -990,8 +990,18 @@ create policy "Allow Admin full access to activity_logs" on public.activity_logs
                     hour: '2-digit', minute: '2-digit'
                 });
 
-                // Check if updated_at is within the last 90 seconds
-                const lastSeen = item.updated_at ? new Date(item.updated_at) : null;
+                // Check if updated_at is within the last 90 seconds, or check latest activity log
+                let lastSeen = item.updated_at ? new Date(item.updated_at) : null;
+                
+                // Find latest activity log for this device
+                const latestLog = activityLogsData.find(log => log.device_id === item.device_id);
+                if (latestLog) {
+                    const logTime = new Date(latestLog.created_at);
+                    if (!lastSeen || logTime > lastSeen) {
+                        lastSeen = logTime;
+                    }
+                }
+                
                 const isOnline = lastSeen && (new Date() - lastSeen) < 90000 && item.is_active;
                 
                 const onlineBadge = isOnline 
