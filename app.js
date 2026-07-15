@@ -1308,6 +1308,51 @@ async function fetchAlerts(silent = false) {
 
 // Live Real-Time Critical Alert Popup Modal
 function showCriticalAlertPopup(alert) {
+    if (alert.alert_type === "UNAUTHORIZED_DEVICE") {
+        // Find matching pending activation item if exists
+        const pendingItem = pendingActivationsData.find(p => p.device_id === alert.device_id);
+        const expiresAtVal = pendingItem ? pendingItem.expires_at : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        const pendingId = pendingItem ? pendingItem.id : alert.id;
+
+        Swal.fire({
+            icon: 'info',
+            title: "🆕 Yangi Faollashtirish So'rovi",
+            html: `
+                <div class="text-left space-y-3 text-sm border-t border-slate-800 pt-3">
+                    <p class="text-blue-400 font-bold text-center">XODIM LITSENZIYANI FAOLLASHTIRISHNI SO'RAMOQDA</p>
+                    <p><strong>Xodim:</strong> <span class="text-blue-400 font-medium">${escapeHtml(alert.employee_name || 'Noma\'lum')}</span></p>
+                    <p><strong>Kompyuter (PC):</strong> <span class="text-slate-300 font-mono">${escapeHtml(alert.pc_name || 'Noma\'lum')} (${escapeHtml(alert.pc_user || 'Noma\'lum')})</span></p>
+                    <p><strong>Device ID:</strong> <span class="text-slate-400 font-mono text-xs block bg-slate-950 p-2 rounded mt-1 border border-slate-900 overflow-x-auto">${alert.device_id}</span></p>
+                </div>
+            `,
+            showCancelButton: true,
+            showDenyButton: true,
+            confirmButtonColor: '#10b981', // green for approve
+            denyButtonColor: '#ef4444', // red for block
+            cancelButtonColor: '#64748b', // gray for dismiss
+            confirmButtonText: '✅ Tasdiqlash (Approve)',
+            denyButtonText: '🚫 Bloklash (Blacklist)',
+            cancelButtonText: 'Rad etish (Reject)'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                approveActivation(pendingId, alert.device_id, alert.employee_name || 'Noma\'lum', expiresAtVal);
+            } else if (result.isDenied) {
+                blacklistDeviceDirectly(alert.device_id, alert.employee_name || 'Noma\'lum', alert.details);
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                // Reject activation directly without double dialogs
+                Swal.fire({ title: 'Rad etilmoqda...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+                if (pendingItem) {
+                    await supabaseClient.from("pending_activations").delete().eq("id", pendingId);
+                }
+                await supabaseClient.from("security_alerts").delete().eq("id", alert.id);
+                Swal.fire({ icon: 'success', title: 'Faollashtirish so\'rovi rad etildi!', timer: 1500, showConfirmButton: false });
+                fetchPendingActivations();
+                fetchAlerts();
+            }
+        });
+        return;
+    }
+
     let iconText = "🚨 Xavfli Amal Aniqlandi!";
     
     if (alert.alert_type === "SERVICE_STOP_ATTEMPT") {
