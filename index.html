@@ -14,6 +14,9 @@
     <!-- SweetAlert2 for Premium Popups -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- ApexCharts for Premium Visual Charts -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -61,7 +64,7 @@
     </div>
 
     <!-- ================= DASHBOARD SCREEN ================= -->
-    <div id="dashboardScreen" class="w-full max-w-5xl glass-panel p-4 md:p-8 hidden my-4">
+    <div id="dashboardScreen" class="w-full max-w-[1600px] glass-panel p-4 md:p-8 hidden my-4">
         <!-- Header -->
         <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-slate-800/80 pb-6">
             <div>
@@ -73,7 +76,10 @@
             </div>
             
             <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-                <span class="text-slate-300 text-xs md:text-sm"><i class="fa-solid fa-user-tie mr-1.5"></i>Admin</span>
+                <span class="text-slate-300 text-xs md:text-sm flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle text-[8px] text-emerald-500 animate-ping"></i>
+                    <i class="fa-solid fa-user-tie"></i> Admin Panel
+                </span>
                 <button id="logoutBtn" class="py-1.5 px-3 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/20 rounded-lg text-xs md:text-sm transition-all duration-200 flex items-center gap-1.5">
                     <span>Chiqish</span>
                     <i class="fa-solid fa-power-off"></i>
@@ -83,7 +89,11 @@
 
         <!-- Dynamic Navigation Tabs -->
         <div class="flex gap-2 md:gap-4 mb-6 border-b border-slate-800 pb-px overflow-x-auto">
-            <button id="tabLicensesBtn" class="py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap">
+            <button id="tabOverviewBtn" class="py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-chart-pie text-sky-400"></i>
+                <span>Bosh sahifa</span>
+            </button>
+            <button id="tabLicensesBtn" class="py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-id-card"></i>
                 <span>Litsenziyalar</span>
             </button>
@@ -103,40 +113,98 @@
             </button>
         </div>
 
-        <!-- ================= TAB 1: LICENSES VIEW ================= -->
-        <div id="licensesView" class="space-y-6">
+        <!-- ================= TAB 0: OVERVIEW (BOSH SAHIFA) ================= -->
+        <div id="overviewView" class="space-y-6">
             <!-- Stats Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="glass-card p-4 flex items-center justify-between">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="glass-card p-5 flex items-center justify-between">
                     <div>
                         <p class="text-slate-400 text-[11px] uppercase tracking-wider font-semibold">Jami Xodimlar</p>
-                        <h3 id="statTotal" class="text-2xl font-bold text-white mt-0.5">0</h3>
+                        <h3 id="overviewTotal" class="text-3xl font-bold text-white mt-1">0</h3>
                     </div>
-                    <div class="text-3xl text-blue-500/30"><i class="fa-solid fa-users"></i></div>
+                    <div class="text-4xl text-blue-500/25"><i class="fa-solid fa-users"></i></div>
                 </div>
 
-                <div class="glass-card p-4 flex items-center justify-between">
+                <div class="glass-card p-5 flex items-center justify-between">
                     <div>
-                        <p class="text-slate-400 text-[11px] uppercase tracking-wider font-semibold">Faol Qurilmalar</p>
-                        <h3 id="statActive" class="text-2xl font-bold text-emerald-400 mt-0.5">0</h3>
+                        <p class="text-slate-400 text-[11px] uppercase tracking-wider font-semibold">Faol Xodimlar</p>
+                        <h3 id="overviewActive" class="text-3xl font-bold text-emerald-400 mt-1">0</h3>
                     </div>
-                    <div class="text-3xl text-emerald-500/30"><i class="fa-solid fa-circle-check"></i></div>
+                    <div class="text-4xl text-emerald-500/25"><i class="fa-solid fa-desktop"></i></div>
                 </div>
 
-                <div class="glass-card p-4 flex items-center justify-between">
+                <div class="glass-card p-5 flex items-center justify-between">
                     <div>
-                        <p class="text-slate-400 text-[11px] uppercase tracking-wider font-semibold">Muddati o'tgan</p>
-                        <h3 id="statExpired" class="text-2xl font-bold text-red-400 mt-0.5">0</h3>
+                        <p class="text-slate-400 text-[11px] uppercase tracking-wider font-semibold">Muddati Tugagan</p>
+                        <h3 id="overviewExpired" class="text-3xl font-bold text-red-400 mt-1">0</h3>
                     </div>
-                    <div class="text-3xl text-red-500/30"><i class="fa-solid fa-hourglass-end"></i></div>
+                    <div class="text-4xl text-red-500/25"><i class="fa-solid fa-hourglass-end"></i></div>
+                </div>
+
+                <div class="glass-card p-5 flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-[11px] uppercase tracking-wider font-semibold">Faol Tahdidlar</p>
+                        <h3 id="overviewAlertsCount" class="text-3xl font-bold text-yellow-500 mt-1">0</h3>
+                    </div>
+                    <div class="text-4xl text-yellow-500/25"><i class="fa-solid fa-triangle-exclamation"></i></div>
                 </div>
             </div>
 
-            <!-- Pending Activations Container -->
-            <div id="pendingActivationsContainer" class="hidden space-y-3 bg-yellow-500/5 p-4 rounded-2xl border border-yellow-500/10">
-                <!-- Dynamic Pending Cards -->
+            <!-- Charts & Highlights Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Line Chart: Activity Trend (lg:col-span-8) -->
+                <div class="lg:col-span-8 glass-panel p-5">
+                    <h3 class="font-bold text-white text-sm md:text-base mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-area text-blue-400"></i>
+                        Faoliyat Intensivligi (Oxirgi 7 kun)
+                    </h3>
+                    <div id="activityTrendChart" class="w-full min-h-[300px]"></div>
+                </div>
+
+                <!-- Donut Chart: File Operations (lg:col-span-4) -->
+                <div class="lg:col-span-4 glass-panel p-5">
+                    <h3 class="font-bold text-white text-sm md:text-base mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-emerald-400"></i>
+                        Fayl Operatsiyalari Ulushi
+                    </h3>
+                    <div id="fileOperationsChart" class="w-full min-h-[300px] flex justify-center items-center"></div>
+                </div>
             </div>
 
+            <!-- Bottom Row: Recent Threat Feed & Quick Activity Logs -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Panel 1: Recent Critical Threats -->
+                <div class="glass-panel p-5 space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                        <h3 class="font-bold text-white text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-shield-halved text-red-500 animate-pulse"></i>
+                            So'nggi Xavfsizlik Tahdidlari
+                        </h3>
+                        <button onclick="switchTab('alerts')" class="text-xs text-blue-400 hover:text-blue-300 font-semibold transition-all">Barchasi</button>
+                    </div>
+                    <div id="overviewAlertsFeed" class="space-y-3 max-h-[250px] overflow-y-auto">
+                        <!-- Dynamic small alert list -->
+                    </div>
+                </div>
+
+                <!-- Panel 2: Live Activity Feed -->
+                <div class="glass-panel p-5 space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                        <h3 class="font-bold text-white text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-bolt text-emerald-400"></i>
+                            Jonli Faoliyat Oqimi (Live Feed)
+                        </h3>
+                        <button onclick="switchTab('activity')" class="text-xs text-blue-400 hover:text-blue-300 font-semibold transition-all">Batafsil</button>
+                    </div>
+                    <div id="overviewActivityFeed" class="space-y-3 max-h-[250px] overflow-y-auto">
+                        <!-- Dynamic activity list -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 1: LICENSES VIEW ================= -->
+        <div id="licensesView" class="space-y-6 hidden">
             <!-- Action Bar -->
             <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
                 <div class="relative flex-1 max-w-md">
@@ -146,10 +214,16 @@
                     <input type="text" id="searchInput" class="w-full pl-9 pr-4 py-2 glass-input text-xs" placeholder="Xodim ismi yoki Device ID bo'yicha qidirish...">
                 </div>
 
-                <button id="addLicenseBtn" class="py-2 px-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg text-xs md:text-sm transition-all duration-200 flex items-center justify-center gap-1.5 shadow-lg shadow-blue-500/10">
-                    <i class="fa-solid fa-plus text-xs"></i>
-                    <span>Yangi Xodim Qo'shish</span>
-                </button>
+                <div class="flex gap-2">
+                    <button id="exportLicensesCsvBtn" class="py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-semibold rounded-lg text-xs transition-all duration-200 flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-file-csv text-xs"></i>
+                        <span>Excel/CSV Eksport</span>
+                    </button>
+                    <button id="addLicenseBtn" class="py-2 px-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg text-xs md:text-sm transition-all duration-200 flex items-center justify-center gap-1.5 shadow-lg shadow-blue-500/10">
+                        <i class="fa-solid fa-plus text-xs"></i>
+                        <span>Yangi Xodim Qo'shish</span>
+                    </button>
+                </div>
             </div>
 
             <!-- License List (Card Grid for Mobile / Table for Desktop) -->
@@ -215,7 +289,10 @@
                 </div>
 
                 <div class="flex gap-2 w-full sm:w-auto">
-                    <button id="clearAllActivitiesBtn" class="w-full sm:w-auto py-1.5 px-3 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/20 rounded-lg text-xs transition-all flex items-center gap-1 justify-center">
+                    <button id="exportActivitiesCsvBtn" class="py-1.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg text-xs transition-all flex items-center gap-1 justify-center font-semibold">
+                        <i class="fa-solid fa-file-csv"></i> CSV Eksport
+                    </button>
+                    <button id="clearAllActivitiesBtn" class="py-1.5 px-3 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/20 rounded-lg text-xs transition-all flex items-center gap-1 justify-center font-semibold">
                         <i class="fa-solid fa-trash-can"></i> Tozalash
                     </button>
                 </div>

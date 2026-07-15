@@ -5,13 +5,17 @@ let alertsData = [];
 let pendingActivationsData = [];
 let activityLogsData = [];
 let notifiedAlertIds = new Set(); // To prevent repeating alerts that were already shown in popups
-let activeTab = "licenses";
+let activeTab = "overview"; // Default tab is now the Overview Dashboard
 let refreshIntervalId = null;
 
 // New state variables for advanced activity logging
 let selectedActivityEmployee = null; // null means "Barcha xodimlar"
 let activitySearchQuery = "";
 let employeeSearchQuery = "";
+
+// Chart instances for smooth dynamic updates
+let trendChartInstance = null;
+let opsChartInstance = null;
 
 // Check if credentials are set
 function initSupabase() {
@@ -68,11 +72,13 @@ const closeModalBtn = document.getElementById("closeModalBtn");
 const cancelModalBtn = document.getElementById("cancelModalBtn");
 
 // Tabs DOM
+const tabOverviewBtn = document.getElementById("tabOverviewBtn");
 const tabLicensesBtn = document.getElementById("tabLicensesBtn");
 const tabBlacklistBtn = document.getElementById("tabBlacklistBtn");
 const tabActivityBtn = document.getElementById("tabActivityBtn");
 const tabAlertsBtn = document.getElementById("tabAlertsBtn");
 
+const overviewView = document.getElementById("overviewView");
 const licensesView = document.getElementById("licensesView");
 const blacklistView = document.getElementById("blacklistView");
 const activityView = document.getElementById("activityView");
@@ -82,6 +88,14 @@ const alertsBadge = document.getElementById("alertsBadge");
 const alertsCountBadge = document.getElementById("alertsCountBadge");
 const alertsContainer = document.getElementById("alertsContainer");
 const blacklistContainer = document.getElementById("blacklistContainer");
+
+// Overview specific DOM elements
+const overviewTotal = document.getElementById("overviewTotal");
+const overviewActive = document.getElementById("overviewActive");
+const overviewExpired = document.getElementById("overviewExpired");
+const overviewAlertsCount = document.getElementById("overviewAlertsCount");
+const overviewAlertsFeed = document.getElementById("overviewAlertsFeed");
+const overviewActivityFeed = document.getElementById("overviewActivityFeed");
 
 // Activity Logs specific DOM elements
 const activitiesContainer = document.getElementById("activitiesContainer");
@@ -95,6 +109,10 @@ const addBlacklistBtn = document.getElementById("addBlacklistBtn");
 const clearAllAlertsBtn = document.getElementById("clearAllAlertsBtn");
 const clearAllActivitiesBtn = document.getElementById("clearAllActivitiesBtn");
 const sqlSetupNotice = document.getElementById("sqlSetupNotice");
+
+// CSV Exporters DOM
+const exportLicensesCsvBtn = document.getElementById("exportLicensesCsvBtn");
+const exportActivitiesCsvBtn = document.getElementById("exportActivitiesCsvBtn");
 
 // Initialization
 document.addEventListener("DOMContentLoaded", () => {
@@ -111,6 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Set up Tabs switching
+    tabOverviewBtn.addEventListener("click", () => switchTab("overview"));
     tabLicensesBtn.addEventListener("click", () => switchTab("licenses"));
     tabBlacklistBtn.addEventListener("click", () => switchTab("blacklist"));
     tabActivityBtn.addEventListener("click", () => switchTab("activity"));
@@ -130,17 +149,26 @@ document.addEventListener("DOMContentLoaded", () => {
         activitySearchQuery = e.target.value.toLowerCase().trim();
         renderActivityLogs(activityLogsData);
     });
+
+    // CSV Exporters listeners
+    exportLicensesCsvBtn.addEventListener("click", exportLicensesCsv);
+    exportActivitiesCsvBtn.addEventListener("click", exportActivitiesCsv);
 });
 
 function handleSession(session) {
     if (session) {
         loginScreen.classList.add("hidden");
         dashboardScreen.classList.remove("hidden");
+        
+        // Initial silent loading to populate all state lists first
         fetchLicenses();
         fetchBlacklist();
         fetchAlerts();
         fetchPendingActivations();
         fetchActivityLogs();
+
+        // Switch to default overview tab
+        switchTab("overview");
 
         // Real-time automatic check every 10 seconds
         if (!refreshIntervalId) {
@@ -162,6 +190,9 @@ function handleSession(session) {
         pendingActivationsContainer.innerHTML = "";
         activitiesContainer.innerHTML = "";
         activityEmployeeList.innerHTML = "";
+        overviewAlertsFeed.innerHTML = "";
+        overviewActivityFeed.innerHTML = "";
+        
         if (refreshIntervalId) {
             clearInterval(refreshIntervalId);
             refreshIntervalId = null;
@@ -173,17 +204,23 @@ function handleSession(session) {
 function switchTab(tab) {
     activeTab = tab;
     // Clear current tabs classes
+    tabOverviewBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
     tabLicensesBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
     tabBlacklistBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
     tabActivityBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
     tabAlertsBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 relative whitespace-nowrap";
     
+    overviewView.classList.add("hidden");
     licensesView.classList.add("hidden");
     blacklistView.classList.add("hidden");
     activityView.classList.add("hidden");
     alertsView.classList.add("hidden");
 
-    if (tab === "licenses") {
+    if (tab === "overview") {
+        tabOverviewBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
+        overviewView.classList.remove("hidden");
+        updateOverviewDashboard();
+    } else if (tab === "licenses") {
         tabLicensesBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
         licensesView.classList.remove("hidden");
         fetchPendingActivations();
@@ -246,7 +283,326 @@ async function fetchLicenses() {
     licensesData = data || [];
     renderLicenses(licensesData);
     updateStats(licensesData);
-    renderActivityEmployeeList();
+    
+    if (activeTab === "overview") {
+        updateOverviewDashboard();
+    } else if (activeTab === "activity") {
+        renderActivityEmployeeList();
+    }
+}
+
+// Update Dashboard Overview Counts, feeds and charts
+function updateOverviewDashboard() {
+    // 1. Total counts
+    overviewTotal.innerText = licensesData.length;
+    overviewAlertsCount.innerText = alertsData.length;
+
+    // Active devices logic
+    const activeCount = licensesData.filter(item => {
+        let lastSeen = item.updated_at ? new Date(item.updated_at) : null;
+        const latestLog = activityLogsData.find(log => log.device_id === item.device_id);
+        if (latestLog) {
+            const logTime = new Date(latestLog.created_at);
+            if (!lastSeen || logTime > lastSeen) lastSeen = logTime;
+        }
+        return lastSeen && (new Date() - lastSeen) < 90000 && item.is_active;
+    }).length;
+    overviewActive.innerText = activeCount;
+
+    const expiredCount = licensesData.filter(item => new Date(item.expires_at) <= new Date()).length;
+    overviewExpired.innerText = expiredCount;
+
+    // 2. Render mini alerts feed
+    renderOverviewAlertsFeed();
+
+    // 3. Render mini activity feed
+    renderOverviewActivityFeed();
+
+    // 4. Render charts
+    renderOverviewCharts();
+}
+
+// Render 4 most recent threats in overview page
+function renderOverviewAlertsFeed() {
+    overviewAlertsFeed.innerHTML = "";
+    const recentAlerts = alertsData.slice(0, 4);
+
+    if (recentAlerts.length === 0) {
+        overviewAlertsFeed.innerHTML = `
+            <div class="text-center py-8 text-slate-500 text-xs">
+                <i class="fa-solid fa-shield-check text-xl mb-1.5 text-emerald-500 block"></i>
+                Hech qanday ogohlantirish yo'q. Tizim tinch.
+            </div>
+        `;
+        return;
+    }
+
+    recentAlerts.forEach(alert => {
+        const timeString = new Date(alert.created_at).toLocaleTimeString("uz-UZ", { hour: '2-digit', minute: '2-digit' });
+        
+        let typeBadge = "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20";
+        if (alert.alert_type === "DEBUGGER_DETECTION" || alert.alert_type === "SECURITY_BYPASS_ATTEMPT") {
+            typeBadge = "bg-red-500/10 text-red-400 border border-red-500/20 animate-pulse";
+        }
+
+        const div = document.createElement("div");
+        div.className = "p-3 glass-card flex justify-between items-center gap-3 border border-red-500/10";
+        div.innerHTML = `
+            <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-white">${escapeHtml(alert.employee_name || 'Noma\'lum')}</span>
+                    <span class="text-[8px] px-1.5 py-0.5 rounded ${typeBadge}">${alert.alert_type}</span>
+                </div>
+                <p class="text-[10px] text-slate-400 truncate mt-1">${escapeHtml(alert.details)}</p>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <span class="text-[10px] text-slate-500 font-mono">${timeString}</span>
+                <button onclick="deleteAlert('${alert.id}')" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 p-1 rounded" title="O'chirish">
+                    <i class="fa-solid fa-check"></i>
+                </button>
+            </div>
+        `;
+        overviewAlertsFeed.appendChild(div);
+    });
+}
+
+// Render 5 most recent activities in overview page
+function renderOverviewActivityFeed() {
+    overviewActivityFeed.innerHTML = "";
+    const recentActivities = activityLogsData.slice(0, 5);
+
+    if (recentActivities.length === 0) {
+        overviewActivityFeed.innerHTML = `
+            <div class="text-center py-8 text-slate-500 text-xs">
+                <i class="fa-solid fa-circle-notch text-xl mb-1.5 block"></i>
+                Faoliyat jurnali bo'sh.
+            </div>
+        `;
+        return;
+    }
+
+    recentActivities.forEach(log => {
+        const timeString = new Date(log.created_at).toLocaleTimeString("uz-UZ", { hour: '2-digit', minute: '2-digit' });
+        
+        let iconClass = "fa-solid fa-circle-notch text-slate-500";
+        if (log.activity_type === "VAULT_FILE_READ") iconClass = "fa-solid fa-file-export text-blue-400";
+        else if (log.activity_type === "VAULT_FILE_WRITE") iconClass = "fa-solid fa-file-import text-emerald-400";
+        else if (log.activity_type === "LOCAL_FILE_WRITE") iconClass = "fa-solid fa-pen-nib text-orange-400";
+
+        const div = document.createElement("div");
+        div.className = "p-2.5 glass-card flex justify-between items-center gap-3 border border-slate-800/40";
+        div.innerHTML = `
+            <div class="min-w-0 flex items-center gap-2.5">
+                <span class="text-xs flex-shrink-0"><i class="${iconClass}"></i></span>
+                <div class="min-w-0">
+                    <h5 class="text-xs font-semibold text-slate-200 truncate">${escapeHtml(log.employee_name || 'Noma\'lum')}</h5>
+                    <p class="text-[10px] text-slate-400 truncate">${escapeHtml(log.details)}</p>
+                </div>
+            </div>
+            <span class="text-[10px] text-slate-500 font-mono flex-shrink-0">${timeString}</span>
+        `;
+        overviewActivityFeed.appendChild(div);
+    });
+}
+
+// Render dynamic ApexCharts visual diagrams
+function renderOverviewCharts() {
+    // ---- CHART 1: Activity Trend (7 Days Line Graph) ----
+    const trendData = getActivityTrendData(activityLogsData);
+
+    const trendOptions = {
+        series: [{
+            name: "Jurnallar soni",
+            data: trendData.counts
+        }],
+        chart: {
+            type: 'area',
+            height: 300,
+            foreColor: '#94a3b8',
+            toolbar: { show: false },
+            background: 'transparent'
+        },
+        colors: ['#3b82f6'],
+        dataLabels: { enabled: false },
+        stroke: { curve: 'smooth', width: 2 },
+        fill: {
+            type: 'gradient',
+            gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.4,
+                opacityTo: 0.05,
+                stops: [0, 90, 100]
+            }
+        },
+        xaxis: {
+            categories: trendData.dates,
+            axisBorder: { show: false },
+            axisTicks: { show: false }
+        },
+        yaxis: {
+            tickAmount: 4,
+            labels: {
+                formatter: function (val) { return Math.round(val); }
+            }
+        },
+        grid: {
+            borderColor: '#1e293b',
+            strokeDashArray: 4,
+            yaxis: { lines: { show: true } },
+            xaxis: { lines: { show: false } }
+        },
+        tooltip: { theme: 'dark' }
+    };
+
+    if (trendChartInstance) {
+        trendChartInstance.updateSeries([{ data: trendData.counts }]);
+        trendChartInstance.updateOptions({ xaxis: { categories: trendData.dates } });
+    } else {
+        trendChartInstance = new ApexCharts(document.querySelector("#activityTrendChart"), trendOptions);
+        trendChartInstance.render();
+    }
+
+    // ---- CHART 2: File Operations breakdown (Donut Graph) ----
+    const opsData = getFileOperationsData(activityLogsData);
+
+    const opsOptions = {
+        series: opsData,
+        chart: {
+            type: 'donut',
+            height: 300,
+            foreColor: '#94a3b8',
+            background: 'transparent'
+        },
+        labels: ["Vault o'qish", "Vault yozish", "Mahalliy chizma"],
+        colors: ['#3b82f6', '#10b981', '#f97316'],
+        plotOptions: {
+            pie: {
+                donut: {
+                    size: '70%',
+                    labels: {
+                        show: true,
+                        total: {
+                            show: true,
+                            label: 'Jami',
+                            color: '#ffffff',
+                            formatter: function (w) {
+                                return w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        stroke: { show: false },
+        legend: {
+            position: 'bottom',
+            labels: { colors: '#94a3b8' }
+        },
+        dataLabels: { enabled: false },
+        tooltip: { theme: 'dark' }
+    };
+
+    if (opsChartInstance) {
+        opsChartInstance.updateSeries(opsData);
+    } else {
+        document.querySelector("#fileOperationsChart").innerHTML = "";
+        opsChartInstance = new ApexCharts(document.querySelector("#fileOperationsChart"), opsOptions);
+        opsChartInstance.render();
+    }
+}
+
+// Helper: Group log items count by the last 7 calendar days
+function getActivityTrendData(logs) {
+    const dates = [];
+    const counts = [];
+    
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toLocaleDateString("uz-UZ", { month: 'short', day: 'numeric' });
+        dates.push(dateStr);
+        
+        const count = logs.filter(log => {
+            const logDate = new Date(log.created_at);
+            return logDate.getDate() === d.getDate() &&
+                   logDate.getMonth() === d.getMonth() &&
+                   logDate.getFullYear() === d.getFullYear();
+        }).length;
+        counts.push(count);
+    }
+    
+    return { dates, counts };
+}
+
+// Helper: Group file operations counts for donut slices
+function getFileOperationsData(logs) {
+    const readCount = logs.filter(log => log.activity_type === "VAULT_FILE_READ").length;
+    const writeCount = logs.filter(log => log.activity_type === "VAULT_FILE_WRITE").length;
+    const localCount = logs.filter(log => log.activity_type === "LOCAL_FILE_WRITE").length;
+    return [readCount, writeCount, localCount];
+}
+
+// CSV exporter utilities
+function exportToCsv(filename, headers, rows) {
+    const csvContent = "data:text/csv;charset=utf-8,\uFEFF" 
+        + [headers.join(",")].concat(rows.map(e => e.map(val => `"${val.replace(/"/g, '""')}"`).join(","))).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Action: Export all licenses to CSV format
+function exportLicensesCsv() {
+    if (licensesData.length === 0) {
+        Swal.fire({ icon: 'warning', title: 'Eksport taqiqlandi', text: 'Eksport qilish uchun litsenziyalar ro\'yxati bo\'sh.' });
+        return;
+    }
+    const headers = ["Xodim Ismi", "Device ID", "Tugash Muddati", "Faollik Holati", "Yaratilgan Sana"];
+    const rows = licensesData.map(item => [
+        item.employee_name,
+        item.device_id,
+        new Date(item.expires_at).toLocaleString("uz-UZ"),
+        item.is_active ? "FAOL" : "BLOKLANGAN",
+        new Date(item.created_at).toLocaleString("uz-UZ")
+    ]);
+    exportToCsv(`Licenses_Report_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
+}
+
+// Action: Export filtered activity logs to CSV format
+function exportActivitiesCsv() {
+    let filtered = selectedActivityEmployee 
+        ? activityLogsData.filter(log => log.employee_name === selectedActivityEmployee) 
+        : activityLogsData;
+
+    if (activitySearchQuery) {
+        filtered = filtered.filter(log => 
+            (log.details && log.details.toLowerCase().includes(activitySearchQuery)) ||
+            (log.pc_name && log.pc_name.toLowerCase().includes(activitySearchQuery))
+        );
+    }
+
+    if (filtered.length === 0) {
+        Swal.fire({ icon: 'warning', title: 'Eksport taqiqlandi', text: 'Filter bo\'yicha hech qanday faoliyat jurnali topilmadi.' });
+        return;
+    }
+
+    const headers = ["Sana/Vaqt", "Xodim Ismi", "Amal turi", "Batafsil ma'lumot", "Komp Nomi", "Komp User", "Device ID"];
+    const rows = filtered.map(log => [
+        new Date(log.created_at).toLocaleString("uz-UZ"),
+        log.employee_name || 'Noma\'lum',
+        log.activity_type,
+        log.details || '',
+        log.pc_name || 'Noma\'lum',
+        log.pc_user || 'Noma\'lum',
+        log.device_id
+    ]);
+    
+    const label = selectedActivityEmployee ? selectedActivityEmployee : "Barcha_Xodimlar";
+    exportToCsv(`Activity_Logs_${label}_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
 }
 
 // Render Employee list in the sidebar of Activity Logs
@@ -485,8 +841,13 @@ async function fetchActivityLogs(silent = false) {
     }
 
     activityLogsData = data || [];
-    renderActivityLogs(activityLogsData);
-    if (!silent) renderActivityEmployeeList(); // Refresh employee logs count badges
+    
+    if (activeTab === "overview") {
+        updateOverviewDashboard();
+    } else if (activeTab === "activity") {
+        renderActivityLogs(activityLogsData);
+        if (!silent) renderActivityEmployeeList(); // Refresh employee logs count badges
+    }
 }
 
 // Render Activity Logs Timeline (Filtered by Selected Employee and Search Input)
@@ -509,7 +870,7 @@ function renderActivityLogs(data) {
 
     if (filtered.length === 0) {
         activitiesContainer.innerHTML = `
-            <div class="text-center p-8 text-slate-500 my-auto">
+            <div class="text-center p-8 text-slate-500 my-auto w-full">
                 <i class="fa-solid fa-clock text-3xl mb-2 block"></i>
                 Mos keluvchi faoliyat jurnallari topilmadi.
             </div>
@@ -780,7 +1141,7 @@ function renderBlacklist(data) {
 
     if (data.length === 0) {
         blacklistContainer.innerHTML = `
-            <div class="col-span-full text-center p-8 text-slate-500 glass-card">
+            <div class="col-span-full text-center p-8 text-slate-500 glass-card w-full">
                 <i class="fa-solid fa-circle-check text-3xl mb-2 text-emerald-500 block"></i>
                 Qora ro'yxat bo'sh. Taqiqlangan qurilmalar yo'q.
             </div>
@@ -992,7 +1353,7 @@ function renderAlerts(data) {
 
     if (data.length === 0) {
         alertsContainer.innerHTML = `
-            <div class="col-span-full text-center p-8 text-slate-500 glass-card">
+            <div class="col-span-full text-center p-8 text-slate-500 glass-card w-full">
                 <i class="fa-solid fa-shield-check text-3xl mb-2 text-emerald-500 block"></i>
                 Hech qanday ogohlantirish xabarlari yo'q. Tizim xavfsiz.
             </div>
