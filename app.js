@@ -223,19 +223,20 @@ function switchTab(tab) {
     } else if (tab === "licenses") {
         tabLicensesBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
         licensesView.classList.remove("hidden");
-        fetchPendingActivations();
+        fetchPendingActivations(false, true);
+        fetchLicenses(true);
     } else if (tab === "blacklist") {
         tabBlacklistBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
         blacklistView.classList.remove("hidden");
-        fetchBlacklist();
+        fetchBlacklist(false, true);
     } else if (tab === "activity") {
         tabActivityBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
         activityView.classList.remove("hidden");
-        fetchActivityLogs();
+        fetchActivityLogs(false, true);
     } else {
         tabAlertsBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 relative whitespace-nowrap";
         alertsView.classList.remove("hidden");
-        fetchAlerts();
+        fetchAlerts(false, true);
     }
 }
 
@@ -269,7 +270,7 @@ logoutBtn.addEventListener("click", async () => {
 });
 
 // Fetch Licenses Data
-async function fetchLicenses() {
+async function fetchLicenses(force = false) {
     if (!supabaseClient) return;
     const { data, error } = await supabaseClient
         .from("licenses")
@@ -284,7 +285,7 @@ async function fetchLicenses() {
     const newData = data || [];
     const hasChanged = JSON.stringify(newData) !== JSON.stringify(licensesData);
     
-    if (hasChanged) {
+    if (hasChanged || force) {
         licensesData = newData;
         renderLicenses(licensesData);
         updateStats(licensesData);
@@ -701,7 +702,7 @@ function selectEmployeeForActivity(employee) {
 }
 
 // Fetch Pending Activations Data
-async function fetchPendingActivations(silent = false) {
+async function fetchPendingActivations(silent = false, force = false) {
     if (!supabaseClient) return;
 
     const { data, error } = await supabaseClient
@@ -716,7 +717,7 @@ async function fetchPendingActivations(silent = false) {
 
     const newData = data || [];
     const hasChanged = JSON.stringify(newData) !== JSON.stringify(pendingActivationsData);
-    if (hasChanged) {
+    if (hasChanged || force) {
         pendingActivationsData = newData;
         renderPendingActivations(pendingActivationsData);
     }
@@ -847,7 +848,7 @@ window.rejectActivation = async function(id) {
 };
 
 // Fetch Activity Logs
-async function fetchActivityLogs(silent = false) {
+async function fetchActivityLogs(silent = false, force = false) {
     if (!supabaseClient) return;
 
     const { data, error } = await supabaseClient
@@ -863,7 +864,7 @@ async function fetchActivityLogs(silent = false) {
 
     const newData = data || [];
     const hasChanged = JSON.stringify(newData) !== JSON.stringify(activityLogsData);
-    if (hasChanged) {
+    if (hasChanged || force) {
         activityLogsData = newData;
         
         if (activeTab === "overview") {
@@ -1150,7 +1151,7 @@ async function toggleActiveState(id, isChecked) {
 }
 
 // Fetch Blacklist Data
-async function fetchBlacklist(silent = false) {
+async function fetchBlacklist(silent = false, force = false) {
     if (!supabaseClient) return;
 
     const { data, error } = await supabaseClient
@@ -1165,7 +1166,7 @@ async function fetchBlacklist(silent = false) {
 
     const newData = data || [];
     const hasChanged = JSON.stringify(newData) !== JSON.stringify(blacklistData);
-    if (hasChanged) {
+    if (hasChanged || force) {
         blacklistData = newData;
         renderBlacklist(blacklistData);
     }
@@ -1301,7 +1302,7 @@ window.removeFromBlacklist = async function(id, deviceId) {
 }
 
 // Fetch Security Alerts & Show Live Popup Notifications
-async function fetchAlerts(silent = false) {
+async function fetchAlerts(silent = false, force = false) {
     if (!supabaseClient) return;
 
     const { data, error } = await supabaseClient
@@ -1320,7 +1321,7 @@ async function fetchAlerts(silent = false) {
     sqlSetupNotice.classList.add("hidden");
     const newData = data || [];
     const hasChanged = JSON.stringify(newData) !== JSON.stringify(alertsData);
-    if (hasChanged) {
+    if (hasChanged || force) {
         alertsData = newData;
         renderAlerts(alertsData);
 
