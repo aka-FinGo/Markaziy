@@ -907,6 +907,10 @@ function renderActivityLogs(data) {
             iconClass = "fa-solid fa-pen-nib text-orange-400";
             badgeColor = "bg-orange-500/10 text-orange-400 border-orange-500/20";
             label = "Mahalliy chizma";
+        } else if (log.activity_type === "THEFT_BLOCK") {
+            iconClass = "fa-solid fa-lock text-red-500";
+            badgeColor = "bg-red-500/10 text-red-400 border-red-500/20";
+            label = "🔒 O'QILDI (Shifrlangan)";
         }
 
         const item = document.createElement("div");
