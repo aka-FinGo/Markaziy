@@ -23,21 +23,27 @@
     <!-- Custom CSS Styles -->
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="p-3 md:p-6 flex items-center justify-center">
+<body class="p-3 md:p-6 flex items-center justify-center relative min-h-screen">
+
+    <!-- Glowing Background Orbs -->
+    <div class="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-purple-900/10 blur-[120px] pointer-events-none z-[-1]"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-blue-900/10 blur-[150px] pointer-events-none z-[-1]"></div>
+    <div class="fixed top-[40%] left-[50%] translate-x-[-50%] translate-y-[-50%] w-[350px] h-[350px] rounded-full bg-indigo-900/10 blur-[100px] pointer-events-none z-[-1]"></div>
 
     <!-- ================= LOGIN SCREEN ================= -->
-    <div id="loginScreen" class="w-full max-w-md p-6 md:p-8 glass-panel animate-fade-in my-8">
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-600/10 text-blue-400 text-3xl mb-4 border border-blue-500/20">
+    <div id="loginScreen" class="w-full max-w-md p-6 md:p-8 glass-panel animate-fade-in my-8 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-indigo-500/5 to-purple-500/5 pointer-events-none"></div>
+        <div class="text-center mb-8 relative z-10">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-500/10 text-indigo-400 text-3xl mb-4 border border-indigo-500/20">
                 <i class="fa-solid fa-shield-halved"></i>
             </div>
             <h2 class="text-2xl font-bold text-white tracking-wide">Aristokrat Vault</h2>
-            <p class="text-slate-400 text-sm mt-1">Administrator Boshqaruv Paneli</p>
+            <p class="text-slate-400 text-sm mt-1">Boshqaruv Nazorat Portali</p>
         </div>
 
-        <form id="loginForm" class="space-y-6">
+        <form id="loginForm" class="space-y-6 relative z-10">
             <div>
-                <label class="block text-sm font-medium text-slate-300 mb-2">Elektron Pochta</label>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Elektron Pochta</label>
                 <div class="relative">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                         <i class="fa-solid fa-envelope"></i>
@@ -47,7 +53,7 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-slate-300 mb-2">Maxfiy Parol</label>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Maxfiy Parol</label>
                 <div class="relative">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                         <i class="fa-solid fa-lock"></i>
@@ -56,7 +62,7 @@
                 </div>
             </div>
 
-            <button type="submit" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-all duration-300 transform active:scale-95 shadow-lg shadow-blue-500/20 flex justify-center items-center gap-2">
+            <button type="submit" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all duration-300 transform active:scale-95 shadow-lg shadow-indigo-500/20 flex justify-center items-center gap-2">
                 <span>Tizimga Kirish</span>
                 <i class="fa-solid fa-right-to-bracket"></i>
             </button>
@@ -64,147 +70,257 @@
     </div>
 
     <!-- ================= DASHBOARD SCREEN ================= -->
-    <div id="dashboardScreen" class="w-full max-w-[1600px] glass-panel p-4 md:p-8 hidden my-4">
-        <!-- Header -->
-        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-slate-800/80 pb-6">
-            <div>
-                <h1 class="text-xl md:text-2xl font-extrabold text-white tracking-wider flex items-center gap-3">
-                    <span class="text-blue-400"><i class="fa-solid fa-server animate-pulse"></i></span>
-                    Aristokrat Vault Control
-                </h1>
-                <p class="text-slate-400 text-xs md:text-sm mt-1">Litsenziyalar va xavfsizlik monitoringi tizimi</p>
+    <div id="dashboardScreen" class="w-full max-w-[1450px] glass-panel p-4 md:p-6 hidden my-4 relative">
+        
+        <!-- Top Header & Navigation Bar -->
+        <header class="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4 mb-6 border-b border-slate-800/40 pb-5">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 text-lg">
+                    <i class="fa-solid fa-server animate-pulse"></i>
+                </div>
+                <div>
+                    <h1 class="text-base md:text-lg font-bold text-white tracking-wider">
+                        Aristokrat Vault Control
+                    </h1>
+                    <p class="text-slate-400 text-[10px] md:text-xs">Litsenziyalar va xavfsizlik monitoringi tizimi</p>
+                </div>
             </div>
             
-            <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-                <span class="text-slate-300 text-xs md:text-sm flex items-center gap-1.5">
-                    <i class="fa-solid fa-circle text-[8px] text-emerald-500 animate-ping"></i>
-                    <i class="fa-solid fa-user-tie"></i> Admin Panel
-                </span>
-                <button id="logoutBtn" class="py-1.5 px-3 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/20 rounded-lg text-xs md:text-sm transition-all duration-200 flex items-center gap-1.5">
+            <!-- Capsule Tab links -->
+            <div class="flex bg-slate-950/60 p-1.5 rounded-full border border-slate-900 overflow-x-auto gap-1">
+                <button id="tabOverviewBtn" class="py-1.5 px-4 rounded-full text-xs font-semibold focus:outline-none flex items-center gap-1.5 whitespace-nowrap transition-all duration-200 bg-indigo-600 text-white shadow-md shadow-indigo-500/20">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Bosh sahifa</span>
+                </button>
+                <button id="tabLicensesBtn" class="py-1.5 px-4 rounded-full text-xs font-semibold focus:outline-none flex items-center gap-1.5 whitespace-nowrap transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-900/50">
+                    <i class="fa-solid fa-id-card"></i>
+                    <span>Litsenziyalar</span>
+                </button>
+                <button id="tabBlacklistBtn" class="py-1.5 px-4 rounded-full text-xs font-semibold focus:outline-none flex items-center gap-1.5 whitespace-nowrap transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-900/50">
+                    <i class="fa-solid fa-ban"></i>
+                    <span>Qora Ro'yxat</span>
+                </button>
+                <button id="tabActivityBtn" class="py-1.5 px-4 rounded-full text-xs font-semibold focus:outline-none flex items-center gap-1.5 whitespace-nowrap transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-900/50">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Faoliyat</span>
+                </button>
+                <button id="tabAlertsBtn" class="py-1.5 px-4 rounded-full text-xs font-semibold focus:outline-none flex items-center gap-1.5 relative whitespace-nowrap transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-900/50">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>Xavfsizlik</span>
+                    <span id="alertsBadge" class="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full hidden animate-ping"></span>
+                    <span id="alertsCountBadge" class="bg-red-500/20 text-red-400 text-[9px] px-1.5 py-px rounded-full hidden ml-1">0</span>
+                </button>
+            </div>
+
+            <!-- Profile and Logout Pill -->
+            <div class="flex items-center gap-3 justify-end">
+                <div class="flex items-center gap-2 bg-slate-950/60 pl-2 pr-3 py-1 rounded-full border border-slate-900">
+                    <div class="w-6 h-6 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-[10px] text-indigo-400 font-bold">
+                        AD
+                    </div>
+                    <span class="text-[10px] md:text-xs font-semibold text-slate-300">+ Vault Pro</span>
+                </div>
+                <button id="logoutBtn" class="py-1.5 px-4 bg-slate-950/60 hover:bg-red-950/20 text-slate-400 hover:text-red-400 border border-slate-900 hover:border-red-900/50 rounded-full text-xs transition-all duration-200 flex items-center gap-1.5">
                     <span>Chiqish</span>
                     <i class="fa-solid fa-power-off"></i>
                 </button>
             </div>
         </header>
 
-        <!-- Dynamic Navigation Tabs -->
-        <div class="flex gap-2 md:gap-4 mb-6 border-b border-slate-800 pb-px overflow-x-auto">
-            <button id="tabOverviewBtn" class="py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap">
-                <i class="fa-solid fa-chart-pie text-sky-400"></i>
-                <span>Bosh sahifa</span>
-            </button>
-            <button id="tabLicensesBtn" class="py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap">
-                <i class="fa-solid fa-id-card"></i>
-                <span>Litsenziyalar</span>
-            </button>
-            <button id="tabBlacklistBtn" class="py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap">
-                <i class="fa-solid fa-ban text-red-400"></i>
-                <span>Qora Ro'yxat</span>
-            </button>
-            <button id="tabActivityBtn" class="py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap">
-                <i class="fa-solid fa-chart-line text-emerald-400"></i>
-                <span>Faoliyat Monitoringi</span>
-            </button>
-            <button id="tabAlertsBtn" class="py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 relative whitespace-nowrap">
-                <i class="fa-solid fa-triangle-exclamation text-yellow-500"></i>
-                <span>Xavfsizlik Tizimi</span>
-                <span id="alertsBadge" class="absolute top-2 right-1.5 w-2 h-2 bg-red-500 rounded-full hidden animate-ping"></span>
-                <span id="alertsCountBadge" class="bg-red-500/20 text-red-400 text-[10px] px-1.5 py-px rounded-full hidden">0</span>
-            </button>
-        </div>
-
         <!-- ================= TAB 0: OVERVIEW (BOSH SAHIFA) ================= -->
-        <div id="overviewView" class="space-y-6">
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="glass-card p-5 flex items-center justify-between">
-                    <div>
-                        <p class="text-slate-400 text-[11px] uppercase tracking-wider font-semibold">Jami Xodimlar</p>
-                        <h3 id="overviewTotal" class="text-3xl font-bold text-white mt-1">0</h3>
+        <div id="overviewView" class="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in">
+            
+            <!-- LEFT COLUMN (col-span-4) -->
+            <div class="lg:col-span-4 space-y-6">
+                <!-- Card 1: Sparkline Analytics -->
+                <div class="glass-card p-5">
+                    <div class="flex justify-between items-center mb-3">
+                        <div>
+                            <p class="text-slate-400 text-[10px] uppercase tracking-wider font-semibold">Tizim Faoliyati</p>
+                            <h3 class="text-lg font-bold text-white mt-0.5">Analytics</h3>
+                        </div>
+                        <span class="text-xs text-indigo-400 font-bold bg-indigo-500/10 px-2.5 py-0.5 rounded-full border border-indigo-500/20">+0.90%</span>
                     </div>
-                    <div class="text-4xl text-blue-500/25"><i class="fa-solid fa-users"></i></div>
+                    <div id="activityTrendChart" class="w-full min-h-[140px]"></div>
                 </div>
 
-                <div class="glass-card p-5 flex items-center justify-between">
-                    <div>
-                        <p class="text-slate-400 text-[11px] uppercase tracking-wider font-semibold">Faol Xodimlar</p>
-                        <h3 id="overviewActive" class="text-3xl font-bold text-emerald-400 mt-1">0</h3>
+                <!-- Card 2: Glass Sphere Status display -->
+                <div class="glass-card p-6 flex flex-col items-center justify-center text-center relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-b from-indigo-500/5 to-purple-500/5 pointer-events-none"></div>
+                    
+                    <div class="relative w-36 h-36 mb-4 flex items-center justify-center">
+                        <div class="w-28 h-28 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 opacity-20 blur-md absolute"></div>
+                        <div class="w-24 h-24 rounded-full border border-white/10 bg-gradient-to-b from-white/10 to-transparent backdrop-blur-md shadow-2xl flex items-center justify-center z-10">
+                            <!-- Inner glowing sphere -->
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-pink-500 via-purple-500 to-blue-500 animate-pulse"></div>
+                        </div>
                     </div>
-                    <div class="text-4xl text-emerald-500/25"><i class="fa-solid fa-desktop"></i></div>
-                </div>
 
-                <div class="glass-card p-5 flex items-center justify-between">
-                    <div>
-                        <p class="text-slate-400 text-[11px] uppercase tracking-wider font-semibold">Muddati Tugagan</p>
-                        <h3 id="overviewExpired" class="text-3xl font-bold text-red-400 mt-1">0</h3>
+                    <div class="z-10">
+                        <h4 class="text-xs font-bold text-white tracking-wider uppercase">Vault Status</h4>
+                        <p class="text-[10px] text-slate-400 mt-1">Litsenziya Xavfsizligi Ta'minlangan</p>
+                        <div class="mt-4 bg-slate-950/80 px-4 py-2 rounded-xl border border-slate-900 font-mono text-sm text-indigo-300 tracking-widest">
+                            25486
+                        </div>
                     </div>
-                    <div class="text-4xl text-red-500/25"><i class="fa-solid fa-hourglass-end"></i></div>
-                </div>
-
-                <div class="glass-card p-5 flex items-center justify-between">
-                    <div>
-                        <p class="text-slate-400 text-[11px] uppercase tracking-wider font-semibold">Faol Tahdidlar</p>
-                        <h3 id="overviewAlertsCount" class="text-3xl font-bold text-yellow-500 mt-1">0</h3>
-                    </div>
-                    <div class="text-4xl text-yellow-500/25"><i class="fa-solid fa-triangle-exclamation"></i></div>
                 </div>
             </div>
 
-            <!-- Charts & Highlights Row -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <!-- Line Chart: Activity Trend (lg:col-span-8) -->
-                <div class="lg:col-span-8 glass-panel p-5">
-                    <h3 class="font-bold text-white text-sm md:text-base mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-chart-area text-blue-400"></i>
-                        Faoliyat Intensivligi (Oxirgi 7 kun)
-                    </h3>
-                    <div id="activityTrendChart" class="w-full min-h-[300px]"></div>
+            <!-- MIDDLE COLUMN (col-span-5) -->
+            <div class="lg:col-span-5 space-y-6">
+                <!-- Card 1: Credit Card style Employee details -->
+                <div class="glass-card p-6 bg-gradient-to-b from-slate-900/60 to-slate-950/60 border border-indigo-500/10 relative overflow-hidden">
+                    <div class="absolute top-4 right-4 text-slate-500 text-lg opacity-40">
+                        <i class="fa-solid fa-wifi text-xl"></i>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Faol Xodim (Employee Name)</p>
+                            <h4 id="ccEmployeeName" class="text-base font-bold text-white tracking-wide mt-1">Yuklanmoqda...</h4>
+                        </div>
+
+                        <div>
+                            <p class="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Qurilma ID (Device ID)</p>
+                            <p id="ccDeviceId" class="font-mono text-xs text-indigo-300 tracking-wide mt-1 truncate">0000-0000-0000-0000</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 pt-2">
+                            <div>
+                                <p class="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Amal Qilish Muddati</p>
+                                <p id="ccExpiresOn" class="text-xs text-slate-300 font-medium mt-1">00/0000</p>
+                            </div>
+                            <div>
+                                <p class="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Litsenziya Holati</p>
+                                <span id="ccStatusBadge" class="inline-block mt-1 text-[10px] bg-slate-500/10 text-slate-400 border border-slate-500/20 px-2 py-0.5 rounded-md font-medium">Oflayn</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Donut Chart: File Operations (lg:col-span-4) -->
-                <div class="lg:col-span-4 glass-panel p-5">
-                    <h3 class="font-bold text-white text-sm md:text-base mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-chart-pie text-emerald-400"></i>
-                        Fayl Operatsiyalari Ulushi
-                    </h3>
-                    <div id="fileOperationsChart" class="w-full min-h-[300px] flex justify-center items-center"></div>
+                <!-- Card 2: Employees List (Social Friends style) -->
+                <div class="glass-card p-5 space-y-3">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                        <h4 class="text-xs font-bold text-white uppercase tracking-wider">Xodimlar Faoliyati</h4>
+                        <span class="text-[9px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md font-semibold" id="miniEmployeesCount">0 logs</span>
+                    </div>
+                    <div id="miniEmployeesList" class="space-y-2.5 max-h-[175px] overflow-y-auto pr-1">
+                        <!-- Dynamic small employee list -->
+                    </div>
+                </div>
+
+                <!-- Card 3: Security Status (Fingerprint style) -->
+                <div class="glass-card p-4 flex items-center justify-between gap-4 border border-red-500/10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 flex-shrink-0">
+                            <i class="fa-solid fa-fingerprint text-lg"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-white">Xavfsizlik Tizimi</h4>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Tahdidlarni tekshirish va bloklash</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <span id="overviewAlertsCountBadge" class="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full font-bold">0 Tahdid</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Bottom Row: Recent Threat Feed & Quick Activity Logs -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Panel 1: Recent Critical Threats -->
-                <div class="glass-panel p-5 space-y-4">
+            <!-- RIGHT COLUMN (col-span-3) -->
+            <div class="lg:col-span-3 space-y-6">
+                <!-- Card 1: Wallet style statistics display -->
+                <div class="glass-card p-5 relative overflow-hidden">
+                    <div class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
+                    
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Vault Control</span>
+                            <i class="fa-solid fa-wallet text-slate-500 text-xs"></i>
+                        </div>
+
+                        <div>
+                            <p class="text-[10px] text-slate-400 font-semibold">Jami Xodimlar</p>
+                            <h3 id="overviewTotalDisplay" class="text-2xl font-extrabold text-white mt-0.5">0</h3>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/40 text-[10px]">
+                            <div>
+                                <p class="text-slate-400">Faol (Online)</p>
+                                <p id="overviewActiveDisplay" class="font-bold text-emerald-400 mt-0.5">0</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-400">Tugagan</p>
+                                <p id="overviewExpiredDisplay" class="font-bold text-red-400 mt-0.5">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Operations Quick Actions -->
+                <div class="glass-card p-5 space-y-4">
+                    <h4 class="text-xs font-bold text-white uppercase tracking-wider">Tezkor Amallar</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="switchTab('licenses')" class="p-3 glass-card flex flex-col items-center justify-center text-center gap-1.5 hover:border-indigo-500/30">
+                            <i class="fa-solid fa-plus text-indigo-400"></i>
+                            <span class="text-[9px] font-semibold text-slate-300">Xodim Qo'shish</span>
+                        </button>
+                        <button onclick="switchTab('blacklist')" class="p-3 glass-card flex flex-col items-center justify-center text-center gap-1.5 hover:border-red-500/30">
+                            <i class="fa-solid fa-ban text-red-400"></i>
+                            <span class="text-[9px] font-semibold text-slate-300">Blacklist</span>
+                        </button>
+                        <button onclick="switchTab('activity')" class="p-3 glass-card flex flex-col items-center justify-center text-center gap-1.5 hover:border-emerald-500/30">
+                            <i class="fa-solid fa-chart-line text-emerald-400"></i>
+                            <span class="text-[9px] font-semibold text-slate-300">Faoliyat</span>
+                        </button>
+                        <button onclick="switchTab('alerts')" class="p-3 glass-card flex flex-col items-center justify-center text-center gap-1.5 hover:border-yellow-500/30">
+                            <i class="fa-solid fa-triangle-exclamation text-yellow-400"></i>
+                            <span class="text-[9px] font-semibold text-slate-300">Xavfsizlik</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- File operations breakdown chart -->
+                <div class="glass-card p-5">
+                    <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-2">Fayl Operatsiyalari</h4>
+                    <div id="fileOperationsChart" class="w-full min-h-[140px] flex justify-center items-center"></div>
+                </div>
+            </div>
+
+            <!-- Threat Feed & Activity Feed (Row below 3 columns) -->
+            <div class="lg:col-span-12 grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4">
+                <!-- Panel 1: Security Threats Feed -->
+                <div class="glass-card p-5 space-y-4">
                     <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                        <h3 class="font-bold text-white text-sm flex items-center gap-2">
+                        <h3 class="font-bold text-white text-xs md:text-sm flex items-center gap-2">
                             <i class="fa-solid fa-shield-halved text-red-500 animate-pulse"></i>
-                            So'nggi Xavfsizlik Tahdidlari
+                            So'nggi Xavfsizlik Ogohlantirishlari
                         </h3>
-                        <button onclick="switchTab('alerts')" class="text-xs text-blue-400 hover:text-blue-300 font-semibold transition-all">Barchasi</button>
+                        <button onclick="switchTab('alerts')" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold transition-all">Barchasi</button>
                     </div>
                     <div id="overviewAlertsFeed" class="space-y-3 max-h-[250px] overflow-y-auto">
-                        <!-- Dynamic small alert list -->
+                        <!-- Dynamic alerts list -->
                     </div>
                 </div>
 
                 <!-- Panel 2: Live Activity Feed -->
-                <div class="glass-panel p-5 space-y-4">
+                <div class="glass-card p-5 space-y-4">
                     <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                        <h3 class="font-bold text-white text-sm flex items-center gap-2">
+                        <h3 class="font-bold text-white text-xs md:text-sm flex items-center gap-2">
                             <i class="fa-solid fa-bolt text-emerald-400"></i>
                             Jonli Faoliyat Oqimi (Live Feed)
                         </h3>
-                        <button onclick="switchTab('activity')" class="text-xs text-blue-400 hover:text-blue-300 font-semibold transition-all">Batafsil</button>
+                        <button onclick="switchTab('activity')" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold transition-all">Batafsil</button>
                     </div>
                     <div id="overviewActivityFeed" class="space-y-3 max-h-[250px] overflow-y-auto">
                         <!-- Dynamic activity list -->
                     </div>
                 </div>
             </div>
+
         </div>
 
         <!-- ================= TAB 1: LICENSES VIEW ================= -->
-        <div id="licensesView" class="space-y-6 hidden">
+        <div id="licensesView" class="space-y-6 hidden animate-fade-in">
             <!-- Action Bar -->
             <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
                 <div class="relative flex-1 max-w-md">
@@ -219,11 +335,16 @@
                         <i class="fa-solid fa-file-csv text-xs"></i>
                         <span>Excel/CSV Eksport</span>
                     </button>
-                    <button id="addLicenseBtn" class="py-2 px-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg text-xs md:text-sm transition-all duration-200 flex items-center justify-center gap-1.5 shadow-lg shadow-blue-500/10">
+                    <button id="addLicenseBtn" class="py-2 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg text-xs md:text-sm transition-all duration-200 flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-500/10">
                         <i class="fa-solid fa-plus text-xs"></i>
                         <span>Yangi Xodim Qo'shish</span>
                     </button>
                 </div>
+            </div>
+
+            <!-- Kutilayotgan faollashtirishlar -->
+            <div id="pendingActivationsContainer" class="hidden glass-card p-4 border border-yellow-500/20 bg-yellow-500/5">
+                <!-- Dynamic Pending Activations -->
             </div>
 
             <!-- License List (Card Grid for Mobile / Table for Desktop) -->
@@ -254,7 +375,7 @@
         </div>
 
         <!-- ================= TAB 2: BLACKLIST VIEW ================= -->
-        <div id="blacklistView" class="space-y-6 hidden">
+        <div id="blacklistView" class="space-y-6 hidden animate-fade-in">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <div>
                     <h2 class="text-base md:text-lg font-bold text-red-400 flex items-center gap-2">
@@ -277,7 +398,7 @@
         </div>
 
         <!-- ================= TAB 3: ACTIVITY LOGS VIEW ================= -->
-        <div id="activityView" class="space-y-6 hidden">
+        <div id="activityView" class="space-y-6 hidden animate-fade-in">
             <!-- Header bar -->
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <div>
@@ -303,7 +424,7 @@
                 
                 <!-- Left Column: Employee List Sidebar (lg:col-span-4) -->
                 <div class="lg:col-span-4 space-y-3">
-                    <div class="glass-panel p-4">
+                    <div class="glass-card p-4">
                         <h3 class="text-xs uppercase font-bold text-slate-400 tracking-wider mb-3">Xodimlar Ro'yxati</h3>
                         
                         <!-- Search input for sidebar employees -->
@@ -323,7 +444,7 @@
 
                 <!-- Right Column: Timeline Display (lg:col-span-8) -->
                 <div class="lg:col-span-8 space-y-4">
-                    <div class="glass-panel p-4 md:p-6 flex flex-col min-h-[480px]">
+                    <div class="glass-card p-4 md:p-6 flex flex-col min-h-[480px]">
                         <!-- Timeline Header -->
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-800/80 pb-4 mb-4 w-full">
                             <div>
@@ -349,14 +470,14 @@
         </div>
 
         <!-- ================= TAB 4: SECURITY ALERTS VIEW ================= -->
-        <div id="alertsView" class="space-y-6 hidden">
+        <div id="alertsView" class="space-y-6 hidden animate-fade-in">
             <!-- SQL Setup Alert -->
             <div id="sqlSetupNotice" class="hidden p-4 rounded-xl border border-yellow-500/20 bg-yellow-500/5 text-slate-300 text-xs space-y-3">
                 <div class="flex items-start gap-2.5">
                     <i class="fa-solid fa-triangle-exclamation text-yellow-500 text-lg mt-0.5"></i>
                     <div>
                         <strong class="text-yellow-500 block mb-1">Xavfsizlik tizimi jadvallari faollashtirilmagan!</strong>
-                        Qurilmalar buzib kirishi haqidagi hisobotlarni ko'rish, kutilayotgan faollashtirishlar, qora ro'yxat va faoliyat monitoringini ishlatish uchun Supabase console SQL Editor oynasida quyidagi kodni ishga tushiring:
+                        Supabase console SQL Editor oynasida quyidagi kodni ishga tushiring:
                     </div>
                 </div>
                 <div class="relative bg-slate-950/80 p-3 rounded-lg border border-slate-800 font-mono text-[10px] overflow-x-auto text-emerald-400 max-h-40">
@@ -453,7 +574,7 @@ create policy "Allow Admin full access to activity_logs" on public.activity_logs
             </button>
 
             <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                <i class="fa-solid fa-id-card text-blue-400"></i>
+                <i class="fa-solid fa-id-card text-indigo-400"></i>
                 <span id="modalTitle">Yangi Litsenziya Qo'shish</span>
             </h3>
 
@@ -479,7 +600,7 @@ create policy "Allow Admin full access to activity_logs" on public.activity_logs
                     <button type="button" id="cancelModalBtn" class="flex-1 py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-lg text-xs md:text-sm transition-all">
                         Bekor qilish
                     </button>
-                    <button type="submit" class="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg text-xs md:text-sm transition-all">
+                    <button type="submit" class="flex-1 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg text-xs md:text-sm transition-all">
                         Saqlash
                     </button>
                 </div>
