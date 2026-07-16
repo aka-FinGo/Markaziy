@@ -339,6 +339,18 @@ function updateOverviewDashboard() {
     if (overviewExpired) overviewExpired.innerText = expiredCount;
     if (overviewExpiredDisplay) overviewExpiredDisplay.innerText = expiredCount;
 
+    // Vault status card - dynamic threats count
+    const vaultAlertsCount = document.getElementById("vaultAlertsCount");
+    if (vaultAlertsCount) {
+        if (alertsData.length === 0) {
+            vaultAlertsCount.innerText = "Xavfsiz";
+            vaultAlertsCount.className = "font-bold text-emerald-400";
+        } else {
+            vaultAlertsCount.innerText = `${alertsData.length} ta tahdid`;
+            vaultAlertsCount.className = "font-bold text-red-400 animate-pulse";
+        }
+    }
+
     // Credit Card display update
     const ccEmployeeName = document.getElementById("ccEmployeeName");
     const ccDeviceId = document.getElementById("ccDeviceId");

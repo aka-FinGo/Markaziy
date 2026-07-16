@@ -156,11 +156,18 @@
                         </div>
                     </div>
 
-                    <div class="z-10">
+                    <div class="z-10 w-full max-w-[200px]">
                         <h4 class="text-xs font-bold text-white tracking-wider uppercase">Vault Status</h4>
-                        <p class="text-[10px] text-slate-400 mt-1">Litsenziya Xavfsizligi Ta'minlangan</p>
-                        <div class="mt-4 bg-slate-950/80 px-4 py-2 rounded-xl border border-slate-900 font-mono text-sm text-indigo-300 tracking-widest">
-                            25486
+                        
+                        <div class="mt-4 flex flex-col gap-2 bg-slate-950/80 px-4 py-2.5 rounded-xl border border-slate-900 font-mono text-[10px] text-indigo-300">
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-500">WebDAV:</span>
+                                <span class="font-bold text-slate-200">55667</span>
+                            </div>
+                            <div class="flex items-center justify-between border-t border-slate-800/40 pt-1.5">
+                                <span class="text-slate-500">Tahdidlar:</span>
+                                <span id="vaultAlertsCount" class="font-bold text-emerald-400">Xavfsiz</span>
+                            </div>
                         </div>
                     </div>
                 </div>
