@@ -670,11 +670,19 @@ function selectEmployeeForActivity(employee) {
     if (employee === null) {
         selectedActivityEmployee = null;
         selectedEmployeeNameHeader.innerText = "Barcha xodimlar";
-        selectedEmployeeSubHeader.innerText = "Barcha qurilmalarning faoliyat jurnali";
+        selectedEmployeeSubHeader.innerHTML = "Barcha qurilmalarning faoliyat jurnali";
     } else {
         selectedActivityEmployee = employee.employee_name;
         selectedEmployeeNameHeader.innerText = employee.employee_name;
-        selectedEmployeeSubHeader.innerText = `Device ID: ${employee.device_id}`;
+        selectedEmployeeSubHeader.innerHTML = `
+            <div class="flex items-center gap-1.5 flex-wrap">
+                <span>Device ID:</span>
+                <span class="font-mono text-[11px] bg-slate-900 border border-slate-800/80 px-2 py-0.5 rounded text-slate-300 hover:text-blue-400 cursor-pointer flex items-center gap-1" onclick="copyToClipboard('${employee.device_id}')" title="Nusxalash">
+                    ${truncateString(employee.device_id, 24)}
+                    <i class="fa-solid fa-copy text-[10px] text-slate-500"></i>
+                </span>
+            </div>
+        `;
     }
     
     // Highlight list item immediately
