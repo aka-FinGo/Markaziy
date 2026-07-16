@@ -3,65 +3,71 @@
 
 body {
     font-family: 'Outfit', sans-serif;
-    background: radial-gradient(circle at 50% 50%, #12162d 0%, #070913 100%);
+    background-color: #0b0c15;
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.05) 0%, transparent 40%);
     min-height: 100vh;
-    color: #e2e8f0;
+    color: #f1f5f9;
     overflow-x: hidden;
 }
 
-/* Glassmorphism Classes */
+/* Glassmorphism Panel */
 .glass-panel {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(15, 17, 28, 0.7);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 24px;
-    box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 28px;
+    box-shadow: 0 20px 50px 0 rgba(0, 0, 0, 0.6);
 }
 
+/* Glassmorphism Cards */
 .glass-card {
-    background: rgba(255, 255, 255, 0.01);
-    backdrop-filter: blur(10px);
+    background: rgba(22, 25, 41, 0.6);
+    backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.03);
-    border-radius: 16px;
+    border-radius: 20px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card:hover {
     transform: translateY(-2px);
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.07);
+    background: rgba(26, 30, 48, 0.7);
+    border-color: rgba(99, 102, 241, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
+/* Premium Inputs */
 .glass-input {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
+    background: rgba(22, 25, 41, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
     color: white;
     transition: all 0.3s ease;
 }
 
 .glass-input:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
-    background: rgba(255, 255, 255, 0.04);
+    border-color: #6366f1;
+    box-shadow: 0 0 16px rgba(99, 102, 241, 0.25);
+    background: rgba(26, 30, 48, 0.9);
 }
 
-/* Toggle Checkbox */
+/* Toggle Switch Styling */
 .toggle-checkbox:checked + .toggle-label {
-    background-color: #10b981;
+    background-color: #6366f1;
 }
 .toggle-checkbox:checked + .toggle-label .toggle-dot {
     transform: translateX(100%);
 }
 
-/* SweetAlert Popup Styles */
+/* SweetAlert Popup Styling */
 .swal2-popup {
-    background: #111424 !important;
-    color: #f8fafc !important;
-    border-radius: 20px !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    background: #0f111c !important;
+    color: #f1f5f9 !important;
+    border-radius: 24px !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
 /* Custom Scrollbars */
@@ -80,17 +86,17 @@ body {
     background: rgba(255, 255, 255, 0.2);
 }
 
-/* Sidebar Hover & Active Styles */
+/* Sidebar Active State */
 .sidebar-item {
     transition: all 0.2s ease-in-out;
 }
 .sidebar-item-active {
-    background: rgba(59, 130, 246, 0.1) !important;
-    border-color: rgba(59, 130, 246, 0.3) !important;
+    background: rgba(99, 102, 241, 0.1) !important;
+    border-color: rgba(99, 102, 241, 0.3) !important;
     color: #ffffff !important;
 }
 .sidebar-item-active .employee-icon {
-    color: #3b82f6 !important;
+    color: #6366f1 !important;
 }
 
 /* Animations */

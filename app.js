@@ -203,12 +203,13 @@ function handleSession(session) {
 // Tab Switch
 function switchTab(tab) {
     activeTab = tab;
-    // Clear current tabs classes
-    tabOverviewBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
-    tabLicensesBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
-    tabBlacklistBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
-    tabActivityBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
-    tabAlertsBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-transparent text-slate-400 hover:text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 relative whitespace-nowrap";
+    // Clear current tabs classes to inactive capsule style
+    const inactiveClass = "py-1.5 px-4 rounded-full text-xs font-semibold focus:outline-none flex items-center gap-1.5 whitespace-nowrap transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-900/50";
+    tabOverviewBtn.className = inactiveClass;
+    tabLicensesBtn.className = inactiveClass;
+    tabBlacklistBtn.className = inactiveClass;
+    tabActivityBtn.className = inactiveClass;
+    tabAlertsBtn.className = "py-1.5 px-4 rounded-full text-xs font-semibold focus:outline-none flex items-center gap-1.5 relative whitespace-nowrap transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-900/50";
     
     overviewView.classList.add("hidden");
     licensesView.classList.add("hidden");
@@ -216,25 +217,27 @@ function switchTab(tab) {
     activityView.classList.add("hidden");
     alertsView.classList.add("hidden");
 
+    const activeClass = "py-1.5 px-4 rounded-full text-xs font-semibold focus:outline-none flex items-center gap-1.5 whitespace-nowrap transition-all duration-200 bg-indigo-600 text-white shadow-md shadow-indigo-500/20";
+
     if (tab === "overview") {
-        tabOverviewBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
+        tabOverviewBtn.className = activeClass;
         overviewView.classList.remove("hidden");
         updateOverviewDashboard();
     } else if (tab === "licenses") {
-        tabLicensesBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
+        tabLicensesBtn.className = activeClass;
         licensesView.classList.remove("hidden");
         fetchPendingActivations(false, true);
         fetchLicenses(true);
     } else if (tab === "blacklist") {
-        tabBlacklistBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
+        tabBlacklistBtn.className = activeClass;
         blacklistView.classList.remove("hidden");
         fetchBlacklist(false, true);
     } else if (tab === "activity") {
-        tabActivityBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 whitespace-nowrap";
+        tabActivityBtn.className = activeClass;
         activityView.classList.remove("hidden");
         fetchActivityLogs(false, true);
     } else {
-        tabAlertsBtn.className = "py-2.5 px-3 md:px-4 border-b-2 border-blue-500 font-semibold text-white text-xs md:text-sm focus:outline-none flex items-center gap-2 relative whitespace-nowrap";
+        tabAlertsBtn.className = "py-1.5 px-4 rounded-full text-xs font-semibold focus:outline-none flex items-center gap-1.5 relative whitespace-nowrap transition-all duration-200 bg-indigo-600 text-white shadow-md shadow-indigo-500/20";
         alertsView.classList.remove("hidden");
         fetchAlerts(false, true);
     }
@@ -304,8 +307,15 @@ async function fetchLicenses(force = false) {
 // Update Dashboard Overview Counts, feeds and charts
 function updateOverviewDashboard() {
     // 1. Total counts
-    overviewTotal.innerText = licensesData.length;
-    overviewAlertsCount.innerText = alertsData.length;
+    const overviewTotal = document.getElementById("overviewTotal");
+    const overviewTotalDisplay = document.getElementById("overviewTotalDisplay");
+    if (overviewTotal) overviewTotal.innerText = licensesData.length;
+    if (overviewTotalDisplay) overviewTotalDisplay.innerText = licensesData.length;
+
+    const overviewAlertsCount = document.getElementById("overviewAlertsCount");
+    const overviewAlertsCountBadge = document.getElementById("overviewAlertsCountBadge");
+    if (overviewAlertsCount) overviewAlertsCount.innerText = alertsData.length;
+    if (overviewAlertsCountBadge) overviewAlertsCountBadge.innerText = `${alertsData.length} Tahdid`;
 
     // Active devices logic
     const activeCount = licensesData.filter(item => {
@@ -317,10 +327,84 @@ function updateOverviewDashboard() {
         }
         return lastSeen && (new Date() - lastSeen) < 90000 && item.is_active;
     }).length;
-    overviewActive.innerText = activeCount;
+    
+    const overviewActive = document.getElementById("overviewActive");
+    const overviewActiveDisplay = document.getElementById("overviewActiveDisplay");
+    if (overviewActive) overviewActive.innerText = activeCount;
+    if (overviewActiveDisplay) overviewActiveDisplay.innerText = activeCount;
 
     const expiredCount = licensesData.filter(item => new Date(item.expires_at) <= new Date()).length;
-    overviewExpired.innerText = expiredCount;
+    const overviewExpired = document.getElementById("overviewExpired");
+    const overviewExpiredDisplay = document.getElementById("overviewExpiredDisplay");
+    if (overviewExpired) overviewExpired.innerText = expiredCount;
+    if (overviewExpiredDisplay) overviewExpiredDisplay.innerText = expiredCount;
+
+    // Credit Card display update
+    const ccEmployeeName = document.getElementById("ccEmployeeName");
+    const ccDeviceId = document.getElementById("ccDeviceId");
+    const ccExpiresOn = document.getElementById("ccExpiresOn");
+    const ccStatusBadge = document.getElementById("ccStatusBadge");
+
+    if (ccEmployeeName && ccDeviceId && ccExpiresOn && ccStatusBadge) {
+        const selectedEmp = licensesData[0] || {
+            employee_name: "Xodim yo'q",
+            device_id: "Noma'lum qurilma",
+            expires_at: new Date().toISOString(),
+            is_active: false
+        };
+
+        ccEmployeeName.innerText = selectedEmp.employee_name;
+        ccDeviceId.innerText = selectedEmp.device_id;
+        ccExpiresOn.innerText = new Date(selectedEmp.expires_at).toLocaleDateString("uz-UZ", {
+            month: '2-digit',
+            year: 'numeric'
+        });
+        
+        ccStatusBadge.innerText = selectedEmp.is_active ? "Faol" : "Bloklangan";
+        ccStatusBadge.className = selectedEmp.is_active
+            ? "inline-block mt-1 text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-md font-medium"
+            : "inline-block mt-1 text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded-md font-medium";
+    }
+
+    // Mini Employee list update
+    const miniEmployeesList = document.getElementById("miniEmployeesList");
+    const miniEmployeesCount = document.getElementById("miniEmployeesCount");
+    if (miniEmployeesList && miniEmployeesCount) {
+        miniEmployeesCount.innerText = `${activityLogsData.length} logs`;
+        miniEmployeesList.innerHTML = "";
+        
+        if (licensesData.length === 0) {
+            miniEmployeesList.innerHTML = `
+                <div class="text-center py-4 text-slate-500 text-[10px]">
+                    Xodimlar mavjud emas.
+                </div>
+            `;
+        } else {
+            licensesData.slice(0, 4).forEach(item => {
+                let lastSeen = item.updated_at ? new Date(item.updated_at) : null;
+                const latestLog = activityLogsData.find(log => log.device_id === item.device_id);
+                if (latestLog) {
+                    const logTime = new Date(latestLog.created_at);
+                    if (!lastSeen || logTime > lastSeen) lastSeen = logTime;
+                }
+                const isOnline = lastSeen && (new Date() - lastSeen) < 90000 && item.is_active;
+                const countLogs = activityLogsData.filter(log => log.device_id === item.device_id).length;
+
+                const div = document.createElement("div");
+                div.className = "flex justify-between items-center text-xs p-1.5 hover:bg-slate-800/20 rounded-lg transition-all duration-200";
+                div.innerHTML = `
+                    <div class="flex items-center gap-2 min-w-0">
+                        ${isOnline 
+                            ? '<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse flex-shrink-0"></span>' 
+                            : '<span class="w-1.5 h-1.5 bg-slate-600 rounded-full flex-shrink-0"></span>'}
+                        <span class="text-slate-200 font-semibold truncate">${escapeHtml(item.employee_name)}</span>
+                    </div>
+                    <span class="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-mono flex-shrink-0">${countLogs} logs</span>
+                `;
+                miniEmployeesList.appendChild(div);
+            });
+        }
+    }
 
     // 2. Render mini alerts feed
     renderOverviewAlertsFeed();
@@ -427,20 +511,21 @@ function renderOverviewCharts() {
         }],
         chart: {
             type: 'area',
-            height: 300,
+            height: 140,
             foreColor: '#94a3b8',
             toolbar: { show: false },
-            background: 'transparent'
+            background: 'transparent',
+            sparkline: { enabled: true }
         },
-        colors: ['#3b82f6'],
+        colors: ['#6366f1'],
         dataLabels: { enabled: false },
-        stroke: { curve: 'smooth', width: 2 },
+        stroke: { curve: 'smooth', width: 2.5 },
         fill: {
             type: 'gradient',
             gradient: {
                 shadeIntensity: 1,
-                opacityFrom: 0.4,
-                opacityTo: 0.05,
+                opacityFrom: 0.35,
+                opacityTo: 0.02,
                 stops: [0, 90, 100]
             }
         },
@@ -458,7 +543,7 @@ function renderOverviewCharts() {
         grid: {
             borderColor: '#1e293b',
             strokeDashArray: 4,
-            yaxis: { lines: { show: true } },
+            yaxis: { lines: { show: false } },
             xaxis: { lines: { show: false } }
         },
         tooltip: { theme: 'dark' }
@@ -479,22 +564,23 @@ function renderOverviewCharts() {
         series: opsData,
         chart: {
             type: 'donut',
-            height: 300,
+            height: 160,
             foreColor: '#94a3b8',
             background: 'transparent'
         },
         labels: ["Vault o'qish", "Vault yozish", "Mahalliy chizma"],
-        colors: ['#3b82f6', '#10b981', '#f97316'],
+        colors: ['#6366f1', '#10b981', '#f97316'],
         plotOptions: {
             pie: {
                 donut: {
-                    size: '70%',
+                    size: '72%',
                     labels: {
                         show: true,
                         total: {
                             show: true,
                             label: 'Jami',
                             color: '#ffffff',
+                            fontSize: '11px',
                             formatter: function (w) {
                                 return w.globals.seriesTotals.reduce((a, b) => a + b, 0);
                             }
@@ -505,8 +591,7 @@ function renderOverviewCharts() {
         },
         stroke: { show: false },
         legend: {
-            position: 'bottom',
-            labels: { colors: '#94a3b8' }
+            show: false
         },
         dataLabels: { enabled: false },
         tooltip: { theme: 'dark' }
