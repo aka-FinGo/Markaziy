@@ -270,6 +270,7 @@ logoutBtn.addEventListener("click", async () => {
 
 // Fetch Licenses Data
 async function fetchLicenses() {
+    if (!supabaseClient) return;
     const { data, error } = await supabaseClient
         .from("licenses")
         .select("*")
@@ -280,14 +281,22 @@ async function fetchLicenses() {
         return;
     }
 
-    licensesData = data || [];
-    renderLicenses(licensesData);
-    updateStats(licensesData);
+    const newData = data || [];
+    const hasChanged = JSON.stringify(newData) !== JSON.stringify(licensesData);
     
-    if (activeTab === "overview") {
-        updateOverviewDashboard();
-    } else if (activeTab === "activity") {
-        renderActivityEmployeeList();
+    if (hasChanged) {
+        licensesData = newData;
+        renderLicenses(licensesData);
+        updateStats(licensesData);
+        
+        if (activeTab === "overview") {
+            updateOverviewDashboard();
+        } else if (activeTab === "activity") {
+            renderActivityEmployeeList();
+        }
+    } else {
+        updateStats(licensesData);
+        updateOnlineStatuses();
     }
 }
 
@@ -655,8 +664,8 @@ function renderActivityEmployeeList() {
             </div>
             <div class="flex items-center gap-1.5 flex-shrink-0">
                 ${isOnline 
-                    ? '<span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" title="Tarmoqda"></span>' 
-                    : '<span class="w-2 h-2 bg-slate-600 rounded-full" title="Oflayn"></span>'}
+                    ? `<span data-sidebar-device-id="${item.device_id}" data-online="true" class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" title="Tarmoqda"></span>` 
+                    : `<span data-sidebar-device-id="${item.device_id}" data-online="false" class="w-2 h-2 bg-slate-600 rounded-full" title="Oflayn"></span>`}
                 <span class="text-[9px] bg-slate-800 text-slate-400 px-1 py-0.5 rounded font-mono">${countLogs}</span>
             </div>
         `;
@@ -705,8 +714,12 @@ async function fetchPendingActivations(silent = false) {
         return;
     }
 
-    pendingActivationsData = data || [];
-    renderPendingActivations(pendingActivationsData);
+    const newData = data || [];
+    const hasChanged = JSON.stringify(newData) !== JSON.stringify(pendingActivationsData);
+    if (hasChanged) {
+        pendingActivationsData = newData;
+        renderPendingActivations(pendingActivationsData);
+    }
 }
 
 // Render Pending Activations Banner Cards
@@ -848,13 +861,20 @@ async function fetchActivityLogs(silent = false) {
         return;
     }
 
-    activityLogsData = data || [];
-    
-    if (activeTab === "overview") {
-        updateOverviewDashboard();
-    } else if (activeTab === "activity") {
-        renderActivityLogs(activityLogsData);
-        if (!silent) renderActivityEmployeeList(); // Refresh employee logs count badges
+    const newData = data || [];
+    const hasChanged = JSON.stringify(newData) !== JSON.stringify(activityLogsData);
+    if (hasChanged) {
+        activityLogsData = newData;
+        
+        if (activeTab === "overview") {
+            updateOverviewDashboard();
+        } else if (activeTab === "activity") {
+            renderActivityLogs(activityLogsData);
+            renderActivityEmployeeList(); // Refresh employee logs count badges
+        }
+    } else {
+        updateStats(licensesData);
+        updateOnlineStatuses();
     }
 }
 
@@ -1014,8 +1034,8 @@ function renderLicenses(data) {
         const isOnline = lastSeen && (new Date() - lastSeen) < 90000 && item.is_active;
         
         const onlineBadge = isOnline 
-            ? '<span class="inline-flex items-center gap-1 text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-medium"><span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span> Tarmoqda</span>' 
-            : '<span class="inline-flex items-center gap-1 text-[10px] bg-slate-500/10 text-slate-400 border border-slate-500/20 px-2 py-0.5 rounded-full font-medium">Oflayn</span>';
+            ? `<span data-badge-device-id="${item.device_id}" data-online="true" class="inline-flex items-center gap-1 text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-medium"><span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span> Tarmoqda</span>` 
+            : `<span data-badge-device-id="${item.device_id}" data-online="false" class="inline-flex items-center gap-1 text-[10px] bg-slate-500/10 text-slate-400 border border-slate-500/20 px-2 py-0.5 rounded-full font-medium">Oflayn</span>`;
 
         // Desktop row creation
         const row = document.createElement("tr");
@@ -1143,8 +1163,12 @@ async function fetchBlacklist(silent = false) {
         return;
     }
 
-    blacklistData = data || [];
-    renderBlacklist(blacklistData);
+    const newData = data || [];
+    const hasChanged = JSON.stringify(newData) !== JSON.stringify(blacklistData);
+    if (hasChanged) {
+        blacklistData = newData;
+        renderBlacklist(blacklistData);
+    }
 }
 
 // Render Blacklist
@@ -1294,27 +1318,31 @@ async function fetchAlerts(silent = false) {
     }
 
     sqlSetupNotice.classList.add("hidden");
-    alertsData = data || [];
-    renderAlerts(alertsData);
+    const newData = data || [];
+    const hasChanged = JSON.stringify(newData) !== JSON.stringify(alertsData);
+    if (hasChanged) {
+        alertsData = newData;
+        renderAlerts(alertsData);
 
-    // Update tab badge status
-    if (alertsData.length > 0) {
-        alertsBadge.classList.remove("hidden");
-        alertsCountBadge.innerText = alertsData.length;
-        alertsCountBadge.classList.remove("hidden");
+        // Update tab badge status
+        if (alertsData.length > 0) {
+            alertsBadge.classList.remove("hidden");
+            alertsCountBadge.innerText = alertsData.length;
+            alertsCountBadge.classList.remove("hidden");
 
-        // Check for new un-notified critical alerts to show popup
-        alertsData.forEach(alert => {
-            if (!notifiedAlertIds.has(alert.id)) {
-                notifiedAlertIds.add(alert.id);
-                
-                // Critical threat popup trigger (debugger, clock, services.msc stop attempt, security bypass)
-                showCriticalAlertPopup(alert);
-            }
-        });
-    } else {
-        alertsBadge.classList.add("hidden");
-        alertsCountBadge.classList.add("hidden");
+            // Check for new un-notified critical alerts to show popup
+            alertsData.forEach(alert => {
+                if (!notifiedAlertIds.has(alert.id)) {
+                    notifiedAlertIds.add(alert.id);
+                    
+                    // Critical threat popup trigger (debugger, clock, services.msc stop attempt, security bypass)
+                    showCriticalAlertPopup(alert);
+                }
+            });
+        } else {
+            alertsBadge.classList.add("hidden");
+            alertsCountBadge.classList.add("hidden");
+        }
     }
 }
 
@@ -1569,6 +1597,48 @@ function updateStats(data) {
 
     const expiredCount = data.filter(item => new Date(item.expires_at) <= new Date()).length;
     statExpired.innerText = expiredCount;
+}
+
+// Dynamically updates the online/offline status dot without redrawing the whole DOM
+function updateOnlineStatuses() {
+    if (!licensesData) return;
+    licensesData.forEach(item => {
+        let lastSeen = item.updated_at ? new Date(item.updated_at) : null;
+        const latestLog = activityLogsData.find(log => log.device_id === item.device_id);
+        if (latestLog) {
+            const logTime = new Date(latestLog.created_at);
+            if (!lastSeen || logTime > lastSeen) lastSeen = logTime;
+        }
+        const isOnline = lastSeen && (new Date() - lastSeen) < 90000 && item.is_active;
+
+        // 1. Update in licenses view (both desktop and mobile)
+        const badges = document.querySelectorAll(`[data-badge-device-id="${item.device_id}"]`);
+        badges.forEach(badge => {
+            const currentOnline = badge.getAttribute("data-online") === "true";
+            if (currentOnline !== isOnline) {
+                badge.setAttribute("data-online", isOnline);
+                badge.innerHTML = isOnline 
+                    ? '<span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span> Tarmoqda'
+                    : 'Oflayn';
+                badge.className = isOnline
+                    ? 'inline-flex items-center gap-1 text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-medium'
+                    : 'inline-flex items-center gap-1 text-[10px] bg-slate-500/10 text-slate-400 border border-slate-500/20 px-2 py-0.5 rounded-full font-medium';
+            }
+        });
+
+        // 2. Update in activity sidebar
+        const sidebarBadge = document.querySelector(`[data-sidebar-device-id="${item.device_id}"]`);
+        if (sidebarBadge) {
+            const currentOnline = sidebarBadge.getAttribute("data-online") === "true";
+            if (currentOnline !== isOnline) {
+                sidebarBadge.setAttribute("data-online", isOnline);
+                sidebarBadge.className = isOnline
+                    ? 'w-2 h-2 bg-emerald-500 rounded-full animate-pulse'
+                    : 'w-2 h-2 bg-slate-600 rounded-full';
+                sidebarBadge.title = isOnline ? "Tarmoqda" : "Oflayn";
+            }
+        }
+    });
 }
 
 // Copy Helper
