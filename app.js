@@ -77,12 +77,23 @@ const tabLicensesBtn = document.getElementById("tabLicensesBtn");
 const tabBlacklistBtn = document.getElementById("tabBlacklistBtn");
 const tabActivityBtn = document.getElementById("tabActivityBtn");
 const tabAlertsBtn = document.getElementById("tabAlertsBtn");
+const tabUpdatesBtn = document.getElementById("tabUpdatesBtn");
 
 const overviewView = document.getElementById("overviewView");
 const licensesView = document.getElementById("licensesView");
 const blacklistView = document.getElementById("blacklistView");
 const activityView = document.getElementById("activityView");
 const alertsView = document.getElementById("alertsView");
+const updatesView = document.getElementById("updatesView");
+
+// Updates View DOM elements
+const currentLatestVersion = document.getElementById("currentLatestVersion");
+const currentDownloadUrl = document.getElementById("currentDownloadUrl");
+const currentReleaseNotes = document.getElementById("currentReleaseNotes");
+const updateSettingsForm = document.getElementById("updateSettingsForm");
+const inputVersion = document.getElementById("inputVersion");
+const inputDownloadUrl = document.getElementById("inputDownloadUrl");
+const inputReleaseNotes = document.getElementById("inputReleaseNotes");
 
 const alertsBadge = document.getElementById("alertsBadge");
 const alertsCountBadge = document.getElementById("alertsCountBadge");
@@ -134,6 +145,9 @@ document.addEventListener("DOMContentLoaded", () => {
     tabBlacklistBtn.addEventListener("click", () => switchTab("blacklist"));
     tabActivityBtn.addEventListener("click", () => switchTab("activity"));
     tabAlertsBtn.addEventListener("click", () => switchTab("alerts"));
+    tabUpdatesBtn.addEventListener("click", () => switchTab("updates"));
+    
+    updateSettingsForm.addEventListener("submit", handlePublishUpdate);
     
     clearAllAlertsBtn.addEventListener("click", clearAllAlerts);
     clearAllActivitiesBtn.addEventListener("click", clearAllActivities);
@@ -209,6 +223,7 @@ function switchTab(tab) {
     tabLicensesBtn.className = inactiveClass;
     tabBlacklistBtn.className = inactiveClass;
     tabActivityBtn.className = inactiveClass;
+    tabUpdatesBtn.className = inactiveClass;
     tabAlertsBtn.className = "py-1.5 px-4 rounded-full text-xs font-semibold focus:outline-none flex items-center gap-1.5 relative whitespace-nowrap transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-900/50";
     
     overviewView.classList.add("hidden");
@@ -216,6 +231,7 @@ function switchTab(tab) {
     blacklistView.classList.add("hidden");
     activityView.classList.add("hidden");
     alertsView.classList.add("hidden");
+    updatesView.classList.add("hidden");
 
     const activeClass = "py-1.5 px-4 rounded-full text-xs font-semibold focus:outline-none flex items-center gap-1.5 whitespace-nowrap transition-all duration-200 bg-indigo-600 text-white shadow-md shadow-indigo-500/20";
 
@@ -236,6 +252,10 @@ function switchTab(tab) {
         tabActivityBtn.className = activeClass;
         activityView.classList.remove("hidden");
         fetchActivityLogs(false, true);
+    } else if (tab === "updates") {
+        tabUpdatesBtn.className = activeClass;
+        updatesView.classList.remove("hidden");
+        fetchUpdateSettings();
     } else {
         tabAlertsBtn.className = "py-1.5 px-4 rounded-full text-xs font-semibold focus:outline-none flex items-center gap-1.5 relative whitespace-nowrap transition-all duration-200 bg-indigo-600 text-white shadow-md shadow-indigo-500/20";
         alertsView.classList.remove("hidden");
@@ -1893,4 +1913,107 @@ function escapeHtml(text) {
     if (!text) return "";
     const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
     return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+// ================= AUTO-UPDATE FUNCTIONS =================
+async function fetchUpdateSettings() {
+    if (!supabaseClient) return;
+    try {
+        const { data, error } = await supabaseClient
+            .from("system_settings")
+            .select("*")
+            .limit(1);
+        
+        if (error) {
+            console.error("Yangilanish sozlamalarini yuklashda xato:", error);
+            return;
+        }
+        
+        if (data && data.length > 0) {
+            const settings = data[0];
+            currentLatestVersion.innerText = settings.latest_version;
+            currentDownloadUrl.innerText = settings.download_url;
+            currentReleaseNotes.innerText = settings.release_notes || "O'zgarishlar yo'q";
+            
+            // Pre-fill inputs with current values
+            inputVersion.value = settings.latest_version;
+            inputDownloadUrl.value = settings.download_url;
+            inputReleaseNotes.value = settings.release_notes || "";
+        } else {
+            currentLatestVersion.innerText = "Mavjud emas";
+            currentDownloadUrl.innerText = "Mavjud emas";
+            currentReleaseNotes.innerText = "Mavjud emas";
+            
+            inputVersion.value = "1.2.0.0";
+            inputDownloadUrl.value = "";
+            inputReleaseNotes.value = "";
+        }
+    } catch (err) {
+        console.error("fetchUpdateSettings catch error:", err);
+    }
+}
+
+async function handlePublishUpdate(e) {
+    e.preventDefault();
+    if (!supabaseClient) return;
+    
+    const version = inputVersion.value.trim();
+    const downloadUrl = inputDownloadUrl.value.trim();
+    const releaseNotes = inputReleaseNotes.value.trim();
+    
+    Swal.fire({
+        title: "Yangilanish e'lon qilinmoqda...",
+        didOpen: () => Swal.showLoading(),
+        allowOutsideClick: false
+    });
+    
+    try {
+        // Avval jadvalda ma'lumot bormi tekshiramiz
+        const { data: existing, error: checkError } = await supabaseClient
+            .from("system_settings")
+            .select("id")
+            .limit(1);
+        
+        if (checkError) throw checkError;
+        
+        let dbResult;
+        if (existing && existing.length > 0) {
+            // Update existing row
+            dbResult = await supabaseClient
+                .from("system_settings")
+                .update({
+                    latest_version: version,
+                    download_url: downloadUrl,
+                    release_notes: releaseNotes
+                })
+                .eq("id", existing[0].id);
+        } else {
+            // Insert new row
+            dbResult = await supabaseClient
+                .from("system_settings")
+                .insert([
+                    {
+                        latest_version: version,
+                        download_url: downloadUrl,
+                        release_notes: releaseNotes
+                    }
+                ]);
+        }
+        
+        if (dbResult.error) throw dbResult.error;
+        
+        Swal.fire({
+            icon: 'success',
+            title: 'Muvaffaqiyatli',
+            text: 'Yangi versiya va sozlamalar muvaffaqiyatli saqlandi!'
+        });
+        
+        fetchUpdateSettings();
+    } catch (err) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Xatolik yuz berdi',
+            text: err.message || err
+        });
+    }
 }
