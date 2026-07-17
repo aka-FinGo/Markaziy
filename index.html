@@ -110,6 +110,10 @@
                     <span id="alertsBadge" class="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full hidden animate-ping"></span>
                     <span id="alertsCountBadge" class="bg-red-500/20 text-red-400 text-[9px] px-1.5 py-px rounded-full hidden ml-1">0</span>
                 </button>
+                <button id="tabUpdatesBtn" class="py-1.5 px-4 rounded-full text-xs font-semibold focus:outline-none flex items-center gap-1.5 whitespace-nowrap transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-900/50">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>Yangilanishlar</span>
+                </button>
             </div>
 
             <!-- Profile and Logout Pill -->
@@ -569,6 +573,71 @@ create policy "Allow Admin full access to activity_logs" on public.activity_logs
             <!-- Alerts Container -->
             <div id="alertsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Dynamic Alert Cards -->
+            </div>
+        </div>
+
+        <!-- ================= TAB 5: UPDATES VIEW ================= -->
+        <div id="updatesView" class="space-y-6 hidden animate-fade-in">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div>
+                    <h2 class="text-base md:text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up text-indigo-400"></i>
+                        Cabix Server Yangilanish Boshqaruvi
+                    </h2>
+                    <p class="text-slate-400 text-xs mt-0.5">Xodimlar dasturlari uchun yangi versiyalar va yuklab olish havolalarini e'lon qilish</p>
+                </div>
+            </div>
+
+            <!-- Current Version and Update form -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Current Settings Card -->
+                <div class="glass-card p-5 space-y-4 lg:col-span-1">
+                    <h3 class="text-xs uppercase font-bold text-slate-400 tracking-wider mb-2">Joriy Sozlamalar</h3>
+                    
+                    <div class="space-y-3 font-mono text-xs">
+                        <div class="flex flex-col gap-1.5 p-3 bg-slate-950/60 rounded-xl border border-slate-900">
+                            <span class="text-slate-500 text-[10px] uppercase">So'nggi Versiya:</span>
+                            <span id="currentLatestVersion" class="font-bold text-indigo-300 text-sm">Yuklanmoqda...</span>
+                        </div>
+                        <div class="flex flex-col gap-1.5 p-3 bg-slate-950/60 rounded-xl border border-slate-900">
+                            <span class="text-slate-500 text-[10px] uppercase">Yuklab Olish Havolasi:</span>
+                            <span id="currentDownloadUrl" class="font-bold text-slate-300 truncate" style="word-break: break-all;">Yuklanmoqda...</span>
+                        </div>
+                        <div class="flex flex-col gap-1.5 p-3 bg-slate-950/60 rounded-xl border border-slate-900">
+                            <span class="text-slate-500 text-[10px] uppercase">Yangi O'zgarishlar (Release Notes):</span>
+                            <span id="currentReleaseNotes" class="text-slate-400" style="white-space: pre-wrap;">Yuklanmoqda...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Update Form Card -->
+                <div class="glass-card p-5 lg:col-span-2">
+                    <h3 class="text-xs uppercase font-bold text-slate-400 tracking-wider mb-4">Yangi Versiyani E'lon Qilish</h3>
+                    
+                    <form id="updateSettingsForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Yangi Versiya Raqami</label>
+                            <input type="text" id="inputVersion" required class="w-full px-3 py-2.5 glass-input text-xs md:text-sm font-bold text-indigo-300" placeholder="Masalan: 1.3.0.0">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">GitHub Raw / Yuklab Olish Havolasi</label>
+                            <input type="url" id="inputDownloadUrl" required class="w-full px-3 py-2.5 glass-input text-xs font-mono" placeholder="https://raw.githubusercontent.com/.../CabixServer.exe">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">O'zgarishlar va Yangiliklar (Release Notes)</label>
+                            <textarea id="inputReleaseNotes" required rows="4" class="w-full px-3 py-2.5 glass-input text-xs md:text-sm" placeholder="Masalan: .bln fayllari yo'naltirish tuzatildi, xavfsizlik kuchaytirildi."></textarea>
+                        </div>
+
+                        <div class="pt-2">
+                            <button type="submit" class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all duration-300 transform active:scale-95 shadow-lg shadow-indigo-500/20 flex justify-center items-center gap-2">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span>Yangilanishni E'lon Qilish (Supabase-ga yozish)</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
